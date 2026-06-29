@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">GymLog</string>
+    <string name="default_web_client_id">IL_TUO_WEB_CLIENT_ID</string>
+</resources>
