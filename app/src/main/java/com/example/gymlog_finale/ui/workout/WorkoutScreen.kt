@@ -2089,6 +2089,7 @@ fun ExerciseInput(
                             LazyColumn {
                                 items(searchResults) { result ->
                                     ListItem(
+                                        colors = ListItemDefaults.colors(containerColor = Color.White),
                                         headlineContent = { Text(result.name ?: "", fontWeight = FontWeight.Bold) },
                                         supportingContent = { Text("${result.bodyPart} | ${result.equipment}") },
                                         modifier = Modifier.clickable {
