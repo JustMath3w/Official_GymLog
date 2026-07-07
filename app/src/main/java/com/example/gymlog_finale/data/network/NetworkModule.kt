@@ -1,5 +1,7 @@
 package com.example.gymlog_finale.data.network
 
+// Modulo di configurazione delle istanze Retrofit condivise dalle varie API di rete.
+
 import kotlinx.serialization.json.Json
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
@@ -7,6 +9,7 @@ import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import retrofit2.converter.kotlinx.serialization.asConverterFactory
 
+// Singleton NetworkModule: raccoglie funzioni/costanti condivise.
 object NetworkModule {
     private val json = Json {
         ignoreUnknownKeys = true
@@ -22,8 +25,6 @@ object NetworkModule {
         .addInterceptor(loggingInterceptor)
         .build()
 
-
-
     val exerciseApi: ExerciseDBApi by lazy {
         Retrofit.Builder()
             .baseUrl(ExerciseDBApi.BASE_URL)
@@ -32,8 +33,6 @@ object NetworkModule {
             .build()
             .create(ExerciseDBApi::class.java)
     }
-
-
 
     val translationApi: TranslationApi by lazy {
         Retrofit.Builder()

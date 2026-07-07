@@ -1,5 +1,7 @@
 package com.example.gymlog_finale.data.firebase
 
+// Sorgente Firestore per il documento users/{uid}, con gestione unicità username e aggiornamento dati profilo.
+
 import com.example.gymlog_finale.data.model.User
 import com.example.gymlog_finale.util.Constants
 import com.example.gymlog_finale.data.repository.UserRepository
@@ -9,6 +11,7 @@ import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.tasks.await
 
+// Classe FirebaseUserSource: unità principale definita in questo file.
 class FirebaseUserSource(
     private val auth: FirebaseAuth = FirebaseAuth.getInstance()
 ) : UserRepository {
@@ -17,10 +20,7 @@ class FirebaseUserSource(
     private val usersCol get() = db.collection(Constants.USERS_COLLECTION)
     private val usernamesCol get() = db.collection(Constants.USERNAMES_COLLECTION)
 
-    /**
-     * Converte manualmente un documento Firestore nel model User
-     * usando i nomi reali dei campi salvati nel database.
-     */
+    // Funzione di supporto interna alla classe.
     private fun documentToUser(document: DocumentSnapshot): User? {
         if (!document.exists()) return null
 
@@ -41,18 +41,12 @@ class FirebaseUserSource(
         )
     }
 
-    /**
-     * Normalizza lo username in lowercase e senza spazi esterni
-     * per supportare unicità e ricerca case-insensitive.
-     */
+    // Funzione di supporto interna alla classe.
     private fun normalizeUsername(username: String): String {
         return username.trim().lowercase()
     }
 
-    /**
-     * Salva o aggiorna il documento indice usernames/{usernameLowercase}
-     * mantenendo uid e username originale.
-     */
+    // Persiste l'entità sulla sorgente dati (creazione o aggiornamento).
     private suspend fun saveUsernameIndex(uid: String, username: String) {
         val normalized = normalizeUsername(username)
         if (normalized.isBlank()) return
@@ -68,19 +62,14 @@ class FirebaseUserSource(
             .await()
     }
 
-    /**
-     * Elimina il vecchio indice username se presente.
-     */
+    // Rimuove definitivamente l'entità indicata dalla sorgente dati.
     private suspend fun deleteUsernameIndex(username: String?) {
         val normalized = username?.trim()?.lowercase().orEmpty()
         if (normalized.isBlank()) return
         usernamesCol.document(normalized).delete().await()
     }
 
-    /**
-     * Recupera tutti gli utenti da mostrare nella Community,
-     * escludendo l'utente autenticato.
-     */
+    // Recupera l'entità o il valore richiesto dalla sorgente dati.
     override suspend fun getAllUsersForCommunity(): Result<List<User>> {
         return try {
             val currentUid = auth.currentUser?.uid
@@ -100,9 +89,7 @@ class FirebaseUserSource(
         }
     }
 
-    /**
-     * Salva o sovrascrive il documento utente e sincronizza la collection usernames.
-     */
+    // Persiste l'entità sulla sorgente dati (creazione o aggiornamento).
     override suspend fun saveUser(user: User): Result<Unit> {
         return try {
             val cleanUsername = user.username.trim()
@@ -142,9 +129,7 @@ class FirebaseUserSource(
         }
     }
 
-    /**
-     * Recupera un profilo utente a partire dall'uid usando mapping manuale.
-     */
+    // Recupera l'entità o il valore richiesto dalla sorgente dati.
     override suspend fun getUser(uid: String): Result<User> {
         return try {
             val snapshot = usersCol.document(uid).get().await()
@@ -157,9 +142,7 @@ class FirebaseUserSource(
         }
     }
 
-    /**
-     * Verifica se il documento utente esiste.
-     */
+    // Espone al chiamante la funzionalità indicata coordinando i livelli sottostanti.
     override suspend fun userExists(uid: String): Boolean {
         return try {
             usersCol.document(uid).get().await().exists()
@@ -168,24 +151,16 @@ class FirebaseUserSource(
         }
     }
 
-    /**
-     * Recupera il profilo dell'utente autenticato.
-     */
+    // Richiede al servizio remoto i dati indicati e li restituisce al chiamante.
     override suspend fun fetchCurrentUser(): Result<User>? {
         val uid = auth.currentUser?.uid ?: return null
         return getUser(uid)
     }
 
-    /**
-     * Restituisce l'uid dell'utente autenticato.
-     */
+    // Recupera l'entità o il valore richiesto dalla sorgente dati.
     override fun getCurrentUid(): String? = auth.currentUser?.uid
 
-    /**
-     * Aggiorna parzialmente i campi del profilo.
-     * Normalizza la chiave logica isPersonalTrainer nello schema reale personalTrainer
-     * per restare coerenti con i documenti già salvati e con le rules.
-     */
+    // Aggiorna i campi indicati dell'entità sulla sorgente dati.
     override suspend fun updateUserFields(
         uid: String,
         fields: Map<String, Any?>
@@ -217,10 +192,7 @@ class FirebaseUserSource(
         }
     }
 
-    /**
-     * Verifica se uno username è disponibile in modo case-insensitive.
-     * Se trova un indice orfano senza utente corrispondente, considera lo username disponibile.
-     */
+    // Predicato che verifica una condizione booleana sullo stato.
     override suspend fun isUsernameAvailable(username: String, excludeUid: String?): Boolean {
         val normalized = normalizeUsername(username)
         if (normalized.isBlank()) return false
@@ -246,9 +218,7 @@ class FirebaseUserSource(
         }
     }
 
-    /**
-     * Cerca utenti tramite la collection usernames e poi legge i relativi profili.
-     */
+    // Esegue una ricerca sull'insieme dati indicato in base ai criteri forniti.
     override suspend fun searchUsersByUsername(prefix: String): Result<List<User>> {
         return try {
             val normalized = normalizeUsername(prefix)
@@ -280,9 +250,7 @@ class FirebaseUserSource(
         }
     }
 
-    /**
-     * Reautentica con email e password.
-     */
+    // Espone al chiamante la funzionalità indicata coordinando i livelli sottostanti.
     override suspend fun reauthenticate(currentPassword: String): Result<Unit> {
         return try {
             val user = auth.currentUser
@@ -298,9 +266,7 @@ class FirebaseUserSource(
         }
     }
 
-    /**
-     * Aggiorna la password dell'utente autenticato.
-     */
+    // Gestisce operazioni relative alla password (aggiornamento o reset).
     override suspend fun changePassword(newPassword: String): Result<Unit> {
         return try {
             val user = auth.currentUser
@@ -312,9 +278,7 @@ class FirebaseUserSource(
         }
     }
 
-    /**
-     * Invia la mail di reset password.
-     */
+    // Gestisce operazioni relative alla password (aggiornamento o reset).
     override suspend fun sendPasswordResetEmail(email: String): Result<Unit> {
         return try {
             auth.sendPasswordResetEmail(email).await()
@@ -324,10 +288,7 @@ class FirebaseUserSource(
         }
     }
 
-    /**
-     * Elimina profilo Firestore, prova a rimuovere l'indice username e infine elimina l'account Auth.
-     * Se l'indice username non è cancellabile per regole Firestore, non blocca comunque la rimozione del profilo.
-     */
+    // Rimuove definitivamente l'entità indicata dalla sorgente dati.
     override suspend fun deleteAccount(): Result<Unit> {
         return try {
             val user = auth.currentUser
@@ -354,8 +315,6 @@ class FirebaseUserSource(
         }
     }
 
-    /**
-     * Effettua il logout dell'utente corrente.
-     */
+    // Termina la sessione utente corrente e ripulisce lo stato locale.
     override fun logout() = auth.signOut()
 }

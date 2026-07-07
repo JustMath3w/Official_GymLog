@@ -1,5 +1,7 @@
 package com.example.gymlog_finale.data.firebase
 
+// Sorgente Firestore + Storage dedicata ai log di progresso (peso e foto) dell'utente.
+
 import android.content.Context
 import android.net.Uri
 import com.example.gymlog_finale.data.model.ProgressLog
@@ -8,20 +10,14 @@ import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.tasks.await
 import java.io.File
 
-/**
- * Implementazione di ProgressRepository che usa Cloud Firestore
- * per leggere e scrivere i log di progresso dell'utente.
- * Le foto progresso vengono copiate nella memoria interna privata dell'app.
- */
+// Classe FirebaseProgressSource: unità principale definita in questo file.
 class FirebaseProgressSource(
     private val firestore: FirebaseFirestore = FirebaseFirestore.getInstance()
 ) : ProgressRepository {
 
     private val progressLogsCollection = firestore.collection("progressLogs")
 
-    /**
-     * Recupera tutti i log di progresso dell'utente ordinati per timestamp crescente.
-     */
+    // Recupera l'entità o il valore richiesto dalla sorgente dati.
     override suspend fun getProgressLogs(userId: String): Result<List<ProgressLog>> {
         return try {
             val snapshot = progressLogsCollection
@@ -46,10 +42,7 @@ class FirebaseProgressSource(
         }
     }
 
-    /**
-     * Salva un nuovo log di progresso su Firestore.
-     * Se l'id è vuoto, Firestore genera automaticamente il documento.
-     */
+    // Aggiunge un elemento alla collezione o allo stato correnti.
     override suspend fun addProgressLog(progressLog: ProgressLog): Result<Unit> {
         return try {
             val data = hashMapOf(
@@ -71,10 +64,7 @@ class FirebaseProgressSource(
         }
     }
 
-    /**
-     * Copia una foto selezionata dall'utente nella cartella privata dell'app
-     * e restituisce il path assoluto del file salvato.
-     */
+    // Persiste l'entità sulla sorgente dati (creazione o aggiornamento).
     private fun savePhotoToInternalStorage(context: Context, userId: String, photoUri: Uri, timestamp: Long): Result<String> {
 
         return try {
@@ -98,10 +88,7 @@ class FirebaseProgressSource(
         }
     }
 
-    /**
-     * Salva opzionalmente la foto nella memoria interna dell'app
-     * e registra poi il log completo su Firestore.
-     */
+    // Aggiunge un elemento alla collezione o allo stato correnti.
     suspend fun addProgressLogWithPhoto(
         context: Context,
         userId: String,
@@ -135,9 +122,7 @@ class FirebaseProgressSource(
         }
     }
 
-    /**
-     * Elimina un log di progresso esistente tramite id documento.
-     */
+    // Rimuove definitivamente l'entità indicata dalla sorgente dati.
     override suspend fun deleteProgressLog(logId: String): Result<Unit> {
         return try {
             progressLogsCollection.document(logId).delete().await()
@@ -147,9 +132,7 @@ class FirebaseProgressSource(
         }
     }
 
-    /**
-     * Elimina un log di progresso e prova a rimuovere anche il file foto locale associato.
-     */
+    // Rimuove definitivamente l'entità indicata dalla sorgente dati.
     suspend fun deleteProgressLogWithPhoto(
         logId: String,
         localPhotoPath: String

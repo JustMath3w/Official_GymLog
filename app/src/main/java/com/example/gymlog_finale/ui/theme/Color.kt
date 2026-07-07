@@ -1,5 +1,7 @@
 package com.example.gymlog_finale.ui.theme
 
+// Palette di colori usata dal tema Compose dell'app.
+
 import androidx.compose.ui.graphics.Color
 
 val Purple80 = Color(0xFFD0BCFF)

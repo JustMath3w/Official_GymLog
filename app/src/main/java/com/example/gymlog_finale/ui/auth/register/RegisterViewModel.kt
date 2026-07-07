@@ -1,5 +1,7 @@
 package com.example.gymlog_finale.ui.auth.register
 
+// ViewModel che orchestra il flusso di registrazione in due step e l'onboarding post-Google.
+
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.gymlog_finale.data.firebase.FirebaseAuthSource
@@ -14,6 +16,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
+// Classe RegisterViewModel: unità principale definita in questo file.
 class RegisterViewModel : ViewModel() {
 
     private val authSource = FirebaseAuthSource()
@@ -27,69 +30,44 @@ class RegisterViewModel : ViewModel() {
 
     private var pendingGoogleUid: String? = null
 
-    /**
-     * Aggiorna il nome nello stato di registrazione.
-     */
+    // Handler UI: aggiorna nello stato il campo modificato dall'utente.
     fun onNomeChange(value: String) = _uiState.update { it.copy(nome = value, errorMessage = null) }
 
-    /**
-     * Aggiorna il cognome nello stato di registrazione.
-     */
+    // Handler UI: aggiorna nello stato il campo modificato dall'utente.
     fun onCognomeChange(value: String) = _uiState.update { it.copy(cognome = value, errorMessage = null) }
 
-    /**
-     * Aggiorna l'email nello stato di registrazione.
-     */
+    // Handler UI: aggiorna nello stato il campo modificato dall'utente.
     fun onEmailChange(value: String) = _uiState.update { it.copy(email = value, errorMessage = null) }
 
-    /**
-     * Aggiorna lo username nello stato di registrazione.
-     */
+    // Handler UI: aggiorna nello stato il campo modificato dall'utente.
     fun onUsernameChange(value: String) = _uiState.update { it.copy(username = value, errorMessage = null) }
 
-    /**
-     * Aggiorna la password nello stato di registrazione.
-     */
+    // Handler UI: aggiorna nello stato il campo modificato dall'utente.
     fun onPasswordChange(value: String) = _uiState.update { it.copy(password = value, errorMessage = null) }
 
-    /**
-     * Aggiorna la conferma password nello stato di registrazione.
-     */
+    // Handler UI: aggiorna nello stato il campo modificato dall'utente.
     fun onConfermaPasswordChange(value: String) = _uiState.update {
         it.copy(confermaPassword = value, errorMessage = null)
     }
 
-    /**
-     * Aggiorna l'obiettivo nello stato di registrazione.
-     */
+    // Handler UI: aggiorna nello stato il campo modificato dall'utente.
     fun onObiettivoChange(value: String) = _uiState.update { it.copy(obiettivo = value, errorMessage = null) }
 
-    /**
-     * Aggiorna l'anno di nascita nello stato di registrazione.
-     */
+    // Handler UI: aggiorna nello stato il campo modificato dall'utente.
     fun onAnnoDiNascitaChange(value: String) = _uiState.update {
         it.copy(annoDiNascita = value, errorMessage = null)
     }
 
-    /**
-     * Aggiorna l'altezza nello stato di registrazione.
-     */
+    // Handler UI: aggiorna nello stato il campo modificato dall'utente.
     fun onAltezzaChange(value: String) = _uiState.update { it.copy(altezza = value, errorMessage = null) }
 
-    /**
-     * Aggiorna il peso nello stato di registrazione.
-     */
+    // Handler UI: aggiorna nello stato il campo modificato dall'utente.
     fun onPesoChange(value: String) = _uiState.update { it.copy(peso = value, errorMessage = null) }
 
-    /**
-     * Aggiorna il flag personal trainer nello stato di registrazione.
-     */
+    // Handler UI: aggiorna nello stato il campo modificato dall'utente.
     fun onIsPersonalTrainerChange(value: Boolean) = _uiState.update { it.copy(isPersonalTrainer = value) }
 
-    /**
-     * Pre-popola i dati ottenuti dal profilo Google
-     * e memorizza l'uid del flusso Google da completare nell'onboarding.
-     */
+    // Aggiorna il campo indicato nello stato interno.
     fun setGoogleUserData(uid: String, nome: String, cognome: String, email: String) {
         _uiState.update {
             it.copy(
@@ -103,9 +81,7 @@ class RegisterViewModel : ViewModel() {
         pendingGoogleUid = uid
     }
 
-    /**
-     * Valida i campi dello Step 1 prima di procedere allo Step 2.
-     */
+    // Valida l'input e restituisce eventuali errori.
     fun validateStep1(): Boolean {
         val state = _uiState.value
         return when {
@@ -123,11 +99,7 @@ class RegisterViewModel : ViewModel() {
         }
     }
 
-    /**
-     * Avvia la registrazione manuale creando l'account Firebase
-     * e salvando poi il profilo completo su Firestore.
-     * Il controllo finale di unicità username è delegato a FirebaseUserSource.saveUser().
-     */
+    // Registra un nuovo utente sulla piattaforma e crea il relativo documento profilo.
     fun register() {
         val state = _uiState.value
         if (!validateStep2(state)) return
@@ -152,11 +124,7 @@ class RegisterViewModel : ViewModel() {
         }
     }
 
-    /**
-     * Completa il flusso Google usando l'uid ottenuto dal sign-in
-     * e salva il profilo finale.
-     * Il controllo finale di unicità username è delegato a FirebaseUserSource.saveUser().
-     */
+    // Espone al chiamante la funzionalità indicata coordinando i livelli sottostanti.
     fun completeGoogleOnboarding() {
         val state = _uiState.value
         val uid = pendingGoogleUid
@@ -174,10 +142,7 @@ class RegisterViewModel : ViewModel() {
         }
     }
 
-    /**
-     * Inizializza il documento utente minimo e poi salva il profilo completo,
-     * lasciando a FirebaseUserSource la sincronizzazione della collection usernames.
-     */
+    // Persiste l'entità sulla sorgente dati (creazione o aggiornamento).
     private suspend fun saveUserToFirestore(uid: String, state: RegisterUiState) {
         val bootstrapResult = bootstrapSource.ensureUserDocument()
 
@@ -229,9 +194,7 @@ class RegisterViewModel : ViewModel() {
         )
     }
 
-    /**
-     * Valida i campi obbligatori del secondo step della registrazione classica.
-     */
+    // Valida l'input e restituisce eventuali errori.
     private fun validateStep2(state: RegisterUiState): Boolean {
         return when {
             state.username.isBlank() -> {
@@ -258,9 +221,7 @@ class RegisterViewModel : ViewModel() {
         }
     }
 
-    /**
-     * Valida i campi obbligatori dell'onboarding Google prima del salvataggio finale.
-     */
+    // Valida l'input e restituisce eventuali errori.
     private fun validateOnboarding(state: RegisterUiState): Boolean {
         return when {
             state.username.isBlank() -> {
@@ -277,9 +238,7 @@ class RegisterViewModel : ViewModel() {
         }
     }
 
-    /**
-     * Resetta il flag di successo dopo che la UI ha gestito la navigazione.
-     */
+    // Espone al chiamante la funzionalità indicata coordinando i livelli sottostanti.
     fun onRegisterHandled() {
         _uiState.update { it.copy(isRegisterSuccess = false) }
     }

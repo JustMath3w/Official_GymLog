@@ -1,5 +1,7 @@
 package com.example.gymlog_finale.ui.profile
 
+// Schermata Profilo utente: foto, dati anagrafici e fisici, azioni account.
+
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -28,15 +30,13 @@ import com.example.gymlog_finale.ui.profile.components.ProfileCard
 import com.example.gymlog_finale.ui.profile.components.ProfileInfoRow
 import com.example.gymlog_finale.ui.profile.components.SectionHeader
 
-/**
- * Identifica quale dialog mostrare. NONE = nessuno aperto.
- * Ogni campo modificabile ha il suo enum per centralizzare la logica.
- */
+// Enum ProfileDialog: insieme finito di valori usati nell'app.
 private enum class ProfileDialog {
     NONE, USERNAME, NOME, COGNOME, ANNO, ALTEZZA, PESO, OBIETTIVO, PT,
     CAMBIO_PASSWORD, RESET_PASSWORD, ELIMINA_ACCOUNT
 }
 
+// Composable che disegna una porzione della UI e ne gestisce lo stato locale.
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProfileScreen(
@@ -50,7 +50,6 @@ fun ProfileScreen(
     val snackbarHostState = remember { SnackbarHostState() }
     var openDialog by remember { mutableStateOf(ProfileDialog.NONE) }
 
-    // Snackbar reattiva ai messaggi del ViewModel; clearMessages() evita di rishow al ricomposizione
     LaunchedEffect(state.successMessage, state.errorMessage) {
         val msg = state.successMessage ?: state.errorMessage
         if (!msg.isNullOrBlank()) {
@@ -96,7 +95,6 @@ fun ProfileScreen(
         ) {
             Spacer(Modifier.height(8.dp))
 
-            // Header profilo
             Box(
                 modifier = Modifier
                     .size(96.dp)
@@ -137,7 +135,6 @@ fun ProfileScreen(
 
             Spacer(Modifier.height(16.dp))
 
-            // === Sezione Account ===
             SectionHeader("Account", modifier = Modifier.align(Alignment.Start))
             ProfileCard {
                 ProfileInfoRow(
@@ -185,7 +182,6 @@ fun ProfileScreen(
                 )
             }
 
-            // === Sezione Dati personali ===
             SectionHeader("Dati personali", modifier = Modifier.align(Alignment.Start))
             ProfileCard {
                 ProfileInfoRow(
@@ -269,7 +265,6 @@ fun ProfileScreen(
             Spacer(Modifier.height(16.dp))
         }
 
-        // === Dialog di modifica campo singolo ===
         when (openDialog) {
             ProfileDialog.USERNAME -> TextEditDialog(
                 titolo = "Username",
@@ -391,9 +386,7 @@ fun ProfileScreen(
     }
 }
 
-// ---- Dialog riutilizzabili (private nel file per non frammentare i componenti) ----
-
-/** Dialog generico per modificare un campo testuale. */
+// Composable che disegna una porzione della UI e ne gestisce lo stato locale.
 @Composable
 private fun TextEditDialog(
     titolo: String,
@@ -429,10 +422,7 @@ private fun TextEditDialog(
     )
 }
 
-/**
- * Dialog per campo numerico: ritorna due valori (Int? per interi, Double? per decimali)
- * a seconda di isDouble — la firma misto Int/Double evita uno switch nel chiamante.
- */
+// Composable che disegna una porzione della UI e ne gestisce lo stato locale.
 @Composable
 private fun NumberEditDialog(
     titolo: String,
@@ -481,7 +471,7 @@ private fun NumberEditDialog(
     )
 }
 
-/** Dialog per scelta da lista (es. obiettivo). */
+// Composable che disegna una porzione della UI e ne gestisce lo stato locale.
 @Composable
 private fun DropdownEditDialog(
     titolo: String,
@@ -528,7 +518,7 @@ private fun DropdownEditDialog(
     )
 }
 
-/** Dialog con interruttore booleano (es. flag PT). */
+// Composable che disegna una porzione della UI e ne gestisce lo stato locale.
 @Composable
 private fun SwitchEditDialog(
     titolo: String,
@@ -564,7 +554,7 @@ private fun SwitchEditDialog(
     )
 }
 
-/** Dialog cambio password con vecchia + nuova + conferma. */
+// Composable che disegna una porzione della UI e ne gestisce lo stato locale.
 @Composable
 private fun ChangePasswordDialog(
     isSaving: Boolean,
@@ -633,7 +623,7 @@ private fun ChangePasswordDialog(
     )
 }
 
-/** Dialog conferma eliminazione account con password obbligatoria. */
+// Composable che disegna una porzione della UI e ne gestisce lo stato locale.
 @Composable
 private fun DeleteAccountDialog(
     isSaving: Boolean,

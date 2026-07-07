@@ -1,5 +1,7 @@
 package com.example.gymlog_finale.ui.workout
 
+// Schermata riservata ai Personal Trainer per creare o modificare la scheda di un cliente.
+
 import com.example.gymlog_finale.data.model.Workout
 import com.example.gymlog_finale.data.model.Exercise
 import com.example.gymlog_finale.data.model.SplitPlan
@@ -10,11 +12,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.lifecycle.viewmodel.compose.viewModel
 
-/**
- * Schermata di creazione scheda lato PT per un cliente specifico.
- * Riusa WorkoutDialog (identico a quello dell'utente) e dirotta il salvataggio
- * su saveWorkoutForClient così la scheda finisce con assignedTo = clientUid.
- */
+// Composable che disegna una porzione della UI e ne gestisce lo stato locale.
 @Composable
 fun PtCreateWorkoutScreen(
     clientUid: String,
@@ -24,7 +22,6 @@ fun PtCreateWorkoutScreen(
 ) {
     val saveSuccess by viewModel.saveSuccess.collectAsState()
 
-    // Chiude la schermata appena il salvataggio va a buon fine e resetta il flag.
     LaunchedEffect(saveSuccess) {
         if (saveSuccess) {
             viewModel.resetSaveSuccess()

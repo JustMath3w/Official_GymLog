@@ -1,5 +1,7 @@
 package com.example.gymlog_finale.ui.auth.components
 
+// Bottone Compose dedicato al flusso di sign-in con Google, con stile coerente col design system.
+
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -19,10 +21,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import com.example.gymlog_finale.R
 
-/**
- * Bottone standard per il login con Google.
- * Mostra un indicatore di caricamento se isLoading è true.
- */
+// Composable che disegna una porzione della UI e ne gestisce lo stato locale.
 @Composable
 fun GoogleSignInButton(
     onClick: () -> Unit,

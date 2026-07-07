@@ -1,50 +1,41 @@
 package com.example.gymlog_finale.data.model
 
-/**
- * Lo stato attuale di una richiesta nella Community.
- */
+// Modello dati per amicizie e richieste (mittente, destinatario, stato, tipo FRIENDSHIP o PT_COACHING).
+
 enum class FriendRequestStatus {
-    PENDING,    // In attesa di risposta
-    ACCEPTED,   // Accettata
-    REJECTED,   // Rifiutata dal destinatario
-    CANCELLED   // Annullata dal mittente prima di ricevere risposta
+    PENDING,
+    ACCEPTED,
+    REJECTED,
+    CANCELLED
 }
 
-/**
- * Indica di che tipo di richiesta stiamo parlando.
- */
+// Enum FriendRequestType: insieme finito di valori usati nell'app.
 enum class FriendRequestType {
-    FRIENDSHIP,   // Voglio aggiungerti agli amici
-    PT_COACHING   // Voglio che tu sia il mio Personal Trainer
+    FRIENDSHIP,
+    PT_COACHING
 }
 
-/**
- * Rappresenta una richiesta inviata (es. richiesta di amicizia) salvata nel database.
- */
+// Data class FriendRequest: aggregato immutabile di dati.
 data class FriendRequest(
-    val id: String = "",                                          // ID unico della richiesta (mittente_destinatario)
-    val senderId: String = "",                                    // ID di chi invia la richiesta
-    val receiverId: String = "",                                  // ID di chi riceve la richiesta
-    val status: String = FriendRequestStatus.PENDING.name,        // Stato iniziale: PENDING (In attesa)
-    val requestType: String = FriendRequestType.FRIENDSHIP.name,  // Tipo di richiesta iniziale: Amicizia
-    val createdAt: Long = System.currentTimeMillis()              // Data e ora in cui è stata inviata (in millisecondi)
+    val id: String = "",
+    val senderId: String = "",
+    val receiverId: String = "",
+    val status: String = FriendRequestStatus.PENDING.name,
+    val requestType: String = FriendRequestType.FRIENDSHIP.name,
+    val createdAt: Long = System.currentTimeMillis()
 )
 
-/**
- * Rappresenta due utenti che sono ufficialmente diventati amici.
- */
+// Data class Friendship: aggregato immutabile di dati.
 data class Friendship(
-    val id: String = "",                             // ID dell'amicizia
-    val users: List<String> = emptyList(),           // Lista contenente i due ID degli utenti diventati amici
-    val createdAt: Long = System.currentTimeMillis() // Data in cui sono diventati amici
+    val id: String = "",
+    val users: List<String> = emptyList(),
+    val createdAt: Long = System.currentTimeMillis()
 )
 
-/**
- * Rappresenta il legame ufficiale tra un Personal Trainer e il suo cliente.
- */
+// Data class PtRelationship: aggregato immutabile di dati.
 data class PtRelationship(
-    val id: String = "",                             // ID della relazione
-    val ptId: String = "",                           // L'ID del Personal Trainer
-    val clientId: String = "",                       // L'ID del cliente
-    val createdAt: Long = System.currentTimeMillis() // Data in cui è iniziata la collaborazione
+    val id: String = "",
+    val ptId: String = "",
+    val clientId: String = "",
+    val createdAt: Long = System.currentTimeMillis()
 )

@@ -1,5 +1,7 @@
 package com.example.gymlog_finale.ui.community.components
 
+// Componenti Compose condivisi tra i vari tab della sezione Community.
+
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.horizontalScroll
@@ -25,6 +27,7 @@ import androidx.compose.ui.unit.sp
 import com.example.gymlog_finale.data.model.FriendStats
 import com.example.gymlog_finale.data.model.User
 
+// Composable che disegna una porzione della UI e ne gestisce lo stato locale.
 @Composable
 fun UserListItem(
     user: User,
@@ -71,9 +74,9 @@ fun UserListItem(
                                 color = Color(0xFFF97316).copy(alpha = 0.1f),
                             ) {
                                 Text(
-                                    "PT", 
-                                    color = Color(0xFFF97316), 
-                                    fontWeight = FontWeight.Bold, 
+                                    "PT",
+                                    color = Color(0xFFF97316),
+                                    fontWeight = FontWeight.Bold,
                                     fontSize = 12.sp,
                                     modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
                                 )
@@ -117,6 +120,7 @@ fun UserListItem(
     }
 }
 
+// Composable che disegna una porzione della UI e ne gestisce lo stato locale.
 @Composable
 fun StatChip(icon: androidx.compose.ui.graphics.vector.ImageVector, label: String) {
     Surface(
@@ -136,6 +140,7 @@ fun StatChip(icon: androidx.compose.ui.graphics.vector.ImageVector, label: Strin
     }
 }
 
+// Espone al chiamante la funzionalità indicata coordinando i livelli sottostanti.
 fun FriendStats.hasAnyData(): Boolean =
     workoutStreakDays > 0 ||
             dietStreakDays > 0 ||
@@ -143,6 +148,7 @@ fun FriendStats.hasAnyData(): Boolean =
             !favoriteExercise.isNullOrBlank() ||
             !personalTrainerName.isNullOrBlank()
 
+// Composable che disegna una porzione della UI e ne gestisce lo stato locale.
 @Composable
 fun EmptyState(message: String) {
     Box(modifier = Modifier.fillMaxSize().padding(24.dp), contentAlignment = Alignment.Center) {

@@ -1,5 +1,7 @@
 package com.example.gymlog_finale.ui.home.components
 
+// Card Compose che mostra una singola statistica riassuntiva nella Home.
+
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -14,6 +16,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 
+// Composable che disegna una porzione della UI e ne gestisce lo stato locale.
 @Composable
 fun StatCard(
     titolo: String,
@@ -38,20 +41,20 @@ fun StatCard(
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             Icon(
-                icona, 
-                contentDescription = null, 
+                icona,
+                contentDescription = null,
                 modifier = Modifier.size(20.dp),
                 tint = Color.Black
             )
             Spacer(Modifier.height(4.dp))
             Text(
-                titolo, 
+                titolo,
                 style = MaterialTheme.typography.labelLarge,
                 color = Color.DarkGray
             )
             Row(verticalAlignment = androidx.compose.ui.Alignment.Bottom) {
                 Text(
-                    valore, 
+                    valore,
                     style = MaterialTheme.typography.headlineMedium,
                     fontWeight = FontWeight.Bold,
                     color = Color.Black
@@ -83,7 +86,7 @@ fun StatCard(
             }
             if (sottotitolo != null) {
                 Text(
-                    sottotitolo, 
+                    sottotitolo,
                     style = MaterialTheme.typography.bodySmall,
                     color = Color.Gray
                 )

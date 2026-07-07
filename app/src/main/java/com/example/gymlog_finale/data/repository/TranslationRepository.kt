@@ -1,5 +1,7 @@
 package com.example.gymlog_finale.data.repository
 
+// Repository che orchestra le chiamate all'API di traduzione con caching semplice.
+
 import android.util.Log
 import com.example.gymlog_finale.data.network.NetworkModule
 import kotlinx.coroutines.Dispatchers
@@ -8,10 +10,7 @@ import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.withContext
 
-/**
- * Repository che si occupa di richiamare l'API di traduzione, esporre il risultato come stringa
- * e ottimizzare le performance tramite cache e traduzioni in batch.
- */
+// Classe TranslationRepository: unità principale definita in questo file.
 class TranslationRepository {
 
     private val api = NetworkModule.translationApi
@@ -47,13 +46,11 @@ class TranslationRepository {
         "collo" to "neck"
     )
 
-    /**
-     * Esegue la traduzione locale di termini noti in italiano.
-     */
+    // Recupera l'entità o il valore richiesto dalla sorgente dati.
     fun getLocalTranslation(query: String): String {
         val lowercaseQuery = query.lowercase().trim()
         localFitnessTranslations[lowercaseQuery]?.let { return it }
-        
+
         val words = lowercaseQuery.split("\\s+".toRegex())
         val translatedWords = words.map { word ->
             localFitnessTranslations[word] ?: word
@@ -61,26 +58,21 @@ class TranslationRepository {
         return translatedWords.joinToString(" ")
     }
 
-    /**
-     * Pulisce una query tradotta in inglese per adattarla al database ExerciseDB (es. rimuove plurali e parentesi).
-     */
+    // Espone al chiamante la funzionalità indicata coordinando i livelli sottostanti.
     fun cleanEnglishQuery(translated: String): String {
         var cleaned = translated
-            .replace(Regex("\\(.*?\\)"), "") // Rimuove parentesi tipo "(exercise)"
-            .replace(Regex("[^a-zA-Z0-9\\s]"), "") // Rimuove punteggiatura
+            .replace(Regex("\\(.*?\\)"), "")
+            .replace(Regex("[^a-zA-Z0-9\\s]"), "")
             .trim()
             .lowercase()
-        
-        // Rimuove la 's' plurale finale se la parola non termina in 'ss' (press) o 'us'
+
         if (cleaned.endsWith("s") && !cleaned.endsWith("ss") && !cleaned.endsWith("us") && cleaned.length > 3) {
             cleaned = cleaned.substring(0, cleaned.length - 1)
         }
         return cleaned
     }
 
-    /**
-     * Traduce il testo passato in input dall'inglese all'italiano (o viceversa in base a [langPair]).
-     */
+    // Esegue la traduzione del testo tra italiano e inglese.
     suspend fun translateText(text: String, langPair: String = "en|it"): String = withContext(Dispatchers.IO) {
         if (text.isBlank()) return@withContext text
 
@@ -98,10 +90,7 @@ class TranslationRepository {
         }
     }
 
-    /**
-     * Traduce una lista di testi in una sola chiamata di rete unendoli con un ritorno a capo '\n'.
-     * In caso di disallineamento nel parsing, ripiega sulla traduzione parallela dei soli testi mancanti in cache.
-     */
+    // Esegue la traduzione del testo tra italiano e inglese.
     suspend fun translateTexts(texts: List<String>, langPair: String = "en|it"): List<String> = withContext(Dispatchers.IO) {
         if (texts.isEmpty()) return@withContext emptyList()
 
@@ -109,7 +98,6 @@ class TranslationRepository {
         val uncachedIndices = mutableListOf<Int>()
         val uncachedTexts = mutableListOf<String>()
 
-        // 1. Controlla la cache
         texts.forEachIndexed { index, text ->
             val cacheKey = "$langPair:$text"
             val cachedValue = cache[cacheKey]
@@ -125,12 +113,11 @@ class TranslationRepository {
             return@withContext results
         }
 
-        // 2. Tenta la traduzione batch
         try {
             val joinedText = uncachedTexts.joinToString("\n")
             val response = api.translate(joinedText, langPair)
             val translatedJoined = response.responseData?.translatedText
-            
+
             if (!translatedJoined.isNullOrBlank()) {
                 val translatedLines = translatedJoined.split("\n").map { it.trim() }
                 if (translatedLines.size == uncachedTexts.size) {
@@ -138,7 +125,7 @@ class TranslationRepository {
                         val origText = uncachedTexts[i]
                         val cacheKey = "$langPair:$origText"
                         cache[cacheKey] = translatedLine
-                        
+
                         val origIndex = uncachedIndices[i]
                         results[origIndex] = translatedLine
                     }
@@ -149,7 +136,6 @@ class TranslationRepository {
             Log.e(tag, "Errore nella traduzione batch, procedo individualmente", e)
         }
 
-        // 3. Fallback: traduzione individuale in parallelo
         coroutineScope {
             val deferreds = uncachedTexts.map { text ->
                 async {
@@ -166,9 +152,7 @@ class TranslationRepository {
         results
     }
 
-    /**
-     * Mappatura statica istantanea delle parti del corpo.
-     */
+    // Esegue la traduzione del testo tra italiano e inglese.
     fun translateBodyPart(bodyPart: String?): String {
         if (bodyPart.isNullOrBlank()) return ""
         return when (bodyPart.lowercase().trim()) {
@@ -186,9 +170,7 @@ class TranslationRepository {
         }
     }
 
-    /**
-     * Mappatura statica istantanea dei muscoli target.
-     */
+    // Esegue la traduzione del testo tra italiano e inglese.
     fun translateTarget(target: String?): String {
         if (target.isNullOrBlank()) return ""
         return when (target.lowercase().trim()) {

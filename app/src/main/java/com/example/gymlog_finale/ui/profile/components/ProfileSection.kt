@@ -1,5 +1,7 @@
 package com.example.gymlog_finale.ui.profile.components
 
+// Sezione Compose riutilizzabile per raggruppare campi omogenei nel Profilo.
+
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
@@ -19,7 +21,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.sp
 
-/** Header di sezione: titolo in maiuscoletto sopra un gruppo di righe correlate. */
+// Composable che disegna una porzione della UI e ne gestisce lo stato locale.
 @Composable
 fun SectionHeader(testo: String, modifier: Modifier = Modifier) {
     Text(
@@ -31,10 +33,7 @@ fun SectionHeader(testo: String, modifier: Modifier = Modifier) {
     )
 }
 
-/**
- * Riga informativa con etichetta + valore opzionale.
- * Se onClick è fornito mostra una freccia ed è cliccabile (placeholder per azioni future).
- */
+// Composable che disegna una porzione della UI e ne gestisce lo stato locale.
 @Composable
 fun ProfileInfoRow(
     icona: ImageVector,
@@ -86,7 +85,7 @@ fun ProfileInfoRow(
     }
 }
 
-/** Card-contenitore che raggruppa più righe sotto un header di sezione. */
+// Composable che disegna una porzione della UI e ne gestisce lo stato locale.
 @Composable
 fun ProfileCard(content: @Composable ColumnScope.() -> Unit) {
     Card(
@@ -100,6 +99,7 @@ fun ProfileCard(content: @Composable ColumnScope.() -> Unit) {
     }
 }
 
+// Composable che disegna una porzione della UI e ne gestisce lo stato locale.
 @Composable
 fun ProfileDivider() {
     HorizontalDivider(

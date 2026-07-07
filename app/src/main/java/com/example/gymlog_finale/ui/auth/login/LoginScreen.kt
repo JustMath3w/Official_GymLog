@@ -1,6 +1,8 @@
 @file:Suppress("DEPRECATION")
 package com.example.gymlog_finale.ui.auth.login
 
+// Schermata di login: raccoglie le credenziali e attiva l'autenticazione tramite LoginViewModel.
+
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
@@ -51,12 +53,7 @@ import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.gms.common.api.ApiException
 
-/**
- * Schermata di login. Gestisce email/password e Google Sign-In.
- * onLoginSuccess naviga alla Home.
- * onNavigateToRegister porta allo Step 1 di registrazione.
- * onNavigateToGoogleOnboarding porta all'onboarding post-Google per nuovi utenti.
- */
+// Composable che disegna una porzione della UI e ne gestisce lo stato locale.
 @Composable
 fun LoginScreen(
     onLoginSuccess: () -> Unit,
@@ -80,7 +77,7 @@ fun LoginScreen(
                 registerViewModel.setGoogleUserData(uid, nome, cognome, email)
             }
         } catch (e: ApiException) {
-            // errore gestito dallo stato UI
+
         }
     }
 

@@ -1,5 +1,7 @@
 package com.example.gymlog_finale.ui.auth.components
 
+// Componente Compose riutilizzabile per campi di testo dei form di autenticazione (email, password, ecc.).
+
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.OutlinedTextField
@@ -11,10 +13,7 @@ import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.ui.graphics.Color
 import androidx.compose.foundation.text.selection.TextSelectionColors
 
-/**
- * Campo di testo riusabile per le schermate di autenticazione.
- * Supporta label, placeholder, trasformazione visuale (es. password) e opzioni tastiera.
- */
+// Composable che disegna una porzione della UI e ne gestisce lo stato locale.
 @Composable
 fun AuthTextField(
     value: String,

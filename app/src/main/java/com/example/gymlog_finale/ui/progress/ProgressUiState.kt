@@ -1,10 +1,10 @@
 package com.example.gymlog_finale.ui.progress
 
+// Data class immutabile che rappresenta lo stato UI della schermata Progressi.
+
 import java.time.LocalDate
 
-/**
- * Rappresenta una foto progresso mostrata nella UI con peso e data associati.
- */
+// Data class ProgressPhotoItem: aggregato immutabile di dati.
 data class ProgressPhotoItem(
     val id: String = "",
     val localPhotoUri: String = "",
@@ -12,49 +12,37 @@ data class ProgressPhotoItem(
     val date: LocalDate = LocalDate.now()
 )
 
-/**
- * Rappresenta un punto del grafico peso nel tempo.
- */
+// Data class WeightChartPoint: aggregato immutabile di dati.
 data class WeightChartPoint(
     val date: LocalDate,
     val weightKg: Double
 )
 
-/**
- * Rappresenta una statistica sintetica mostrata nella schermata progressi.
- */
+// Data class ProgressStatItem: aggregato immutabile di dati.
 data class ProgressStatItem(
     val title: String,
     val value: String
 )
 
-/**
- * Rappresenta un esercizio nella classifica dei più eseguiti.
- */
+// Data class TopExerciseItem: aggregato immutabile di dati.
 data class TopExerciseItem(
     val exerciseName: String,
     val executionCount: Int
 )
 
-/**
- * Identifica la metrica selezionata per il grafico esercizio.
- */
+// Enum ExerciseProgressMetric: insieme finito di valori usati nell'app.
 enum class ExerciseProgressMetric {
     WEIGHT,
     REPS
 }
 
-/**
- * Rappresenta un punto del grafico di progressione di un esercizio.
- */
+// Data class ExerciseProgressPoint: aggregato immutabile di dati.
 data class ExerciseProgressPoint(
     val date: LocalDate,
     val value: Double
 )
 
-/**
- * Stato completo osservato dalla schermata Progressi.
- */
+// Data class ProgressUiState: aggregato immutabile di dati.
 data class ProgressUiState(
     val isLoading: Boolean = false,
     val errorMessage: String? = null,

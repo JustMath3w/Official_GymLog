@@ -1,5 +1,7 @@
 package com.example.gymlog_finale.ui.home
 
+// ViewModel della Home: aggrega dati da Workout, Progress e Diet Repository per il feed del giorno.
+
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
@@ -21,11 +23,7 @@ import java.time.Instant
 import java.time.ZoneId
 import java.time.temporal.ChronoUnit
 
-/**
- * ViewModel della HomeScreen.
- * Recupera il profilo utente reale da Firestore e popola le altre metriche
- * con valori reali o placeholder.
- */
+// Classe HomeViewModel: unità principale definita in questo file.
 class HomeViewModel(
     application: Application
 ) : AndroidViewModel(application) {
@@ -38,7 +36,7 @@ class HomeViewModel(
         loadHomeData()
     }
 
-    /** Carica il profilo utente reale da Firestore e i dati della dieta dal Local Storage. */
+    // Carica i dati necessari per la schermata o il caso d'uso.
     fun loadHomeData() {
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, errorMessage = null) }
@@ -51,12 +49,11 @@ class HomeViewModel(
 
             val user = result.getOrNull()
             if (user != null) {
-                // Calcolo del giorno della settimana attuale (0 = Lunedì, 6 = Domenica)
+
                 val calendar = Calendar.getInstance()
                 val dayOfWeek = calendar.get(Calendar.DAY_OF_WEEK)
                 val currentDayIndex = if (dayOfWeek == Calendar.SUNDAY) 6 else dayOfWeek - 2
 
-                // Caricamento dei dati della dieta da Firestore
                 var kcalAssunte = 0
                 var kcalObiettivo = 2000
                 var streakAttuale = 0
@@ -66,8 +63,7 @@ class HomeViewModel(
                     val uid = com.google.firebase.auth.FirebaseAuth.getInstance().currentUser?.uid
                     if (uid != null) {
                         val db = com.google.firebase.firestore.FirebaseFirestore.getInstance()
-                        
-                        // 1. Fetch diet goals
+
                         val userDoc = db.collection("CalendarDiet").document(uid).get().await()
                         if (userDoc.exists()) {
                             val goals = userDoc.get("diet_goals") as? Map<String, Any>
@@ -76,15 +72,14 @@ class HomeViewModel(
                                 if (targetCal != null) kcalObiettivo = targetCal
                             }
                         }
-                        
-                        // 2. Fetch current day's diet
+
                         val y = calendar.get(Calendar.YEAR)
                         val m = calendar.get(Calendar.MONTH) + 1
                         val d = calendar.get(Calendar.DAY_OF_MONTH)
                         val docId = "${y}_${m}_${d}"
-                        
+
                         val dayDoc = db.collection("CalendarDiet").document(uid).collection("days").document(docId).get().await()
-                            
+
                         if (dayDoc.exists()) {
                             val stats = dayDoc.toObject(com.example.gymlog_finale.data.model.DailyDietStats::class.java)
                             if (stats != null) {
@@ -92,12 +87,11 @@ class HomeViewModel(
                                 kcalAssunte = stats.consumedCalories
                             }
                         }
-                        // 3. Fetch workout logs for streak
+
                         val logsSnapshot = db.collection("workout_logs").whereEqualTo("userId", uid).get().await()
                         val logs = logsSnapshot.documents.mapNotNull { it.toObject(WorkoutLog::class.java) }
                         streakAttuale = calculateWorkoutStreak(logs)
 
-                        // 4. Fetch diet logs for streak
                         val dietDaysSnapshot = db.collection("CalendarDiet").document(uid).collection("days").get().await()
                         val dietQualifiedDays = dietDaysSnapshot.documents.mapNotNull { doc ->
                             val dietStats = doc.toObject(com.example.gymlog_finale.data.model.DailyDietStats::class.java)
@@ -140,6 +134,7 @@ class HomeViewModel(
         }
     }
 
+    // Calcola l'aggregato richiesto a partire dai dati forniti.
     private fun calculateWorkoutStreak(workoutLogs: List<WorkoutLog>): Int {
         val distinctDates = workoutLogs
             .map { it.completedAt.toLocalDate() }
@@ -173,6 +168,7 @@ class HomeViewModel(
         return streak
     }
 
+    // Calcola l'aggregato richiesto a partire dai dati forniti.
     private fun calculateDietStreak(qualifiedDays: List<LocalDate>): Int {
         if (qualifiedDays.isEmpty()) return 0
 
@@ -202,6 +198,7 @@ class HomeViewModel(
         return streak
     }
 
+    // Funzione di supporto interna alla classe.
     private fun Long.toLocalDate(): LocalDate {
         return Instant.ofEpochMilli(this)
             .atZone(ZoneId.systemDefault())

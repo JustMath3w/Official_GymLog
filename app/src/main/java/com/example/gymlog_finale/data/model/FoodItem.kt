@@ -1,18 +1,18 @@
 package com.example.gymlog_finale.data.model
 
+// Modello dati che rappresenta un alimento (nome e valori nutrizionali per 100 g) usato in ricerca e log pasti.
+
 import java.util.UUID
 
-/**
- * Rappresenta un singolo alimento inserito nella dieta dell'utente.
- */
+// Data class FoodItem: aggregato immutabile di dati.
 data class FoodItem(
-    val id: String = UUID.randomUUID().toString(), // Genera un ID casuale e univoco per ogni cibo
-    val name: String = "",                         // Il nome dell'alimento (es. "Pollo", "Mela")
-    val category: String = "",                     // La categoria (es. "Colazione", "Pranzo", "Snack")
-    val grams: Int = 0,                            // Quantità consumata
-    val unit: String = "g",                        // Unità di misura (default in grammi)
-    val calories: Int = 0,                         // Calorie apportate da questa quantità
-    val carbs: Double = 0.0,                       // Carboidrati apportati da questa quantità
-    val proteins: Double = 0.0,                    // Proteine apportate da questa quantità
-    val fats: Double = 0.0                         // Grassi apportati da questa quantità
+    val id: String = UUID.randomUUID().toString(),
+    val name: String = "",
+    val category: String = "",
+    val grams: Int = 0,
+    val unit: String = "g",
+    val calories: Int = 0,
+    val carbs: Double = 0.0,
+    val proteins: Double = 0.0,
+    val fats: Double = 0.0
 )

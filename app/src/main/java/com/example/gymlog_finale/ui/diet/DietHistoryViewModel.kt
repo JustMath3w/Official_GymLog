@@ -1,5 +1,7 @@
 package com.example.gymlog_finale.ui.diet
 
+// ViewModel dello storico dieta: espone gli aggregati settimanali/giornalieri.
+
 import com.example.gymlog_finale.data.model.DailyDietStats
 
 import android.app.Application
@@ -12,15 +14,14 @@ import kotlinx.coroutines.flow.asStateFlow
 import java.util.Calendar
 import java.util.UUID
 
+// Classe DietHistoryViewModel: unità principale definita in questo file.
 class DietHistoryViewModel(application: Application) : AndroidViewModel(application) {
     private val auth = FirebaseAuth.getInstance()
     private val db = FirebaseFirestore.getInstance()
 
-    // Current selected date for history view
     private val _selectedDate = MutableStateFlow(Calendar.getInstance())
     val selectedDate: StateFlow<Calendar> = _selectedDate.asStateFlow()
 
-    // Stats for the currently selected date
     private val _selectedDayStats = MutableStateFlow<DailyDietStats?>(null)
     val selectedDayStats: StateFlow<DailyDietStats?> = _selectedDayStats.asStateFlow()
 
@@ -43,18 +44,18 @@ class DietHistoryViewModel(application: Application) : AndroidViewModel(applicat
                         val protGoal = (goals?.get("proteins") as? Number)?.toDouble() ?: 150.0
                         val fatsGoal = (goals?.get("fats") as? Number)?.toDouble() ?: 70.0
                         globalGoals = DailyDietStats(calGoal, carbsGoal, protGoal, fatsGoal)
-                        
-                        // Fallback: se il giorno non ha salvato i goals personalizzati
+
                         if (_selectedDayStats.value?.foods?.isEmpty() == true) {
                             _selectedDayStats.value = globalGoals.copy()
                         }
                     }
                 }
         }
-        // Load data for the initial selected date (today)
+
         loadDataForDate(_selectedDate.value)
     }
 
+    // Imposta l'elemento indicato come selezione corrente nello stato UI.
     fun selectDate(calendar: Calendar) {
         _selectedDate.value = calendar
         loadDataForDate(calendar)
@@ -62,7 +63,7 @@ class DietHistoryViewModel(application: Application) : AndroidViewModel(applicat
 
     private val userId: String? get() = auth.currentUser?.uid
 
-
+    // Carica i dati necessari per la schermata o il caso d'uso.
     private fun loadDataForDate(date: Calendar) {
         val uid = userId
         if (uid == null) return
@@ -71,10 +72,9 @@ class DietHistoryViewModel(application: Application) : AndroidViewModel(applicat
         currentDayListener?.remove()
 
         val y = date.get(Calendar.YEAR)
-        val m = date.get(Calendar.MONTH) + 1 // 1-indexed to match saving logic
+        val m = date.get(Calendar.MONTH) + 1
         val d = date.get(Calendar.DAY_OF_MONTH)
 
-        // Then fetch the actual day data from Calendar Diet using addSnapshotListener
         currentDayListener = db.collection("CalendarDiet").document(uid).collection("days").document("${y}_${m}_${d}")
             .addSnapshotListener { snapshot, e ->
                 if (e != null) {
@@ -89,7 +89,7 @@ class DietHistoryViewModel(application: Application) : AndroidViewModel(applicat
                         val tCarbs = if (stats.totalCarbs > 0.0) stats.totalCarbs else globalGoals.totalCarbs
                         val tProt = if (stats.totalProteins > 0.0) stats.totalProteins else globalGoals.totalProteins
                         val tFats = if (stats.totalFats > 0.0) stats.totalFats else globalGoals.totalFats
-                        
+
                         _selectedDayStats.value = stats.copy(
                             totalCalories = tCal,
                             totalCarbs = tCarbs,
@@ -100,18 +100,20 @@ class DietHistoryViewModel(application: Application) : AndroidViewModel(applicat
                         _selectedDayStats.value = globalGoals.copy()
                     }
                 } else {
-                    // No document for this day
+
                     _selectedDayStats.value = globalGoals.copy()
                 }
                 _isLoading.value = false
             }
     }
 
+    // Callback del ViewModel: rilascia risorse asincrone alla distruzione.
     override fun onCleared() {
         super.onCleared()
         currentDayListener?.remove()
         goalsListener?.remove()
     }
+    // Aggiorna i campi indicati dell'entità sulla sorgente dati.
     fun updateGoalsForDateRange(
         startDate: Calendar,
         endDate: Calendar,
@@ -124,11 +126,6 @@ class DietHistoryViewModel(application: Application) : AndroidViewModel(applicat
 
         _isLoading.value = true
 
-        // Solo aggiornamento dei documenti per i giorni specificati.
-        // NON aggiorniamo più i 'diet_goals' globali, in modo da preservare i dati passati.
-
-
-        // Calculate all dates in range
         val datesToUpdate = mutableListOf<String>()
         val cal = startDate.clone() as Calendar
         cal.set(Calendar.HOUR_OF_DAY, 0)
@@ -149,7 +146,6 @@ class DietHistoryViewModel(application: Application) : AndroidViewModel(applicat
             cal.add(Calendar.DAY_OF_MONTH, 1)
         }
 
-        // Perform batch updates (Firestore max 500 writes per batch)
         val collectionRef = db.collection("CalendarDiet").document(uid).collection("days")
         val batches = mutableListOf<com.google.firebase.firestore.WriteBatch>()
         var currentBatch = db.batch()
@@ -165,7 +161,7 @@ class DietHistoryViewModel(application: Application) : AndroidViewModel(applicat
         for (docId in datesToUpdate) {
             currentBatch.set(collectionRef.document(docId), updates, com.google.firebase.firestore.SetOptions.merge())
             count++
-            if (count == 490) { // Keep slightly under 500 limit
+            if (count == 490) {
                 batches.add(currentBatch)
                 currentBatch = db.batch()
                 count = 0
@@ -175,7 +171,6 @@ class DietHistoryViewModel(application: Application) : AndroidViewModel(applicat
             batches.add(currentBatch)
         }
 
-        // Commit all batches
         var completedBatches = 0
         if (batches.isEmpty()) {
             _isLoading.value = false
@@ -188,7 +183,7 @@ class DietHistoryViewModel(application: Application) : AndroidViewModel(applicat
                 completedBatches++
                 if (completedBatches == batches.size) {
                     _isLoading.value = false
-                    // Reload current day to reflect changes
+
                     loadDataForDate(_selectedDate.value)
                 }
             }

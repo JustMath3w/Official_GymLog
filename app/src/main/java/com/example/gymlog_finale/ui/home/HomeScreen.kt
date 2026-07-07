@@ -1,5 +1,7 @@
 package com.example.gymlog_finale.ui.home
 
+// Schermata Home: riepilogo del giorno (scheda attiva, peso, calorie) e accessi rapidi.
+
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -28,10 +30,7 @@ import com.example.gymlog_finale.ui.home.components.ToolsGrid
 import com.example.gymlog_finale.ui.home.components.WorkoutTodayCard
 import com.example.gymlog_finale.ui.workout.WorkoutViewModel
 
-/**
- * Schermata principale dell'app: hub di navigazione e riepilogo dello stato giornaliero.
- * Mostra streak, workout odierno, peso, kcal e griglia di accesso alle sezioni.
- */
+// Composable che disegna una porzione della UI e ne gestisce lo stato locale.
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
@@ -42,18 +41,17 @@ fun HomeScreen(
     onNavigateToProfile: () -> Unit,
     viewModel: HomeViewModel = viewModel()
 ) {
-    // collectAsStateWithLifecycle sospende l'osservazione del Flow quando la schermata non è visibile, risparmiando risorse
+
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     val nomeUtente = state.user?.nome?.takeIf { it.isNotBlank() } ?: "Atleta"
     val activeWorkout by WorkoutViewModel.globalActiveWorkout.collectAsStateWithLifecycle(null)
 
-    // Ricarica i dati ogni volta che la schermata rientra nella composition (es. tornando indietro dalla Dieta)
     androidx.compose.runtime.LaunchedEffect(Unit) {
         viewModel.loadHomeData()
     }
 
     Scaffold(
-        containerColor = Color(0xFFEBEBEB) // Colore di sfondo leggermente grigio
+        containerColor = Color(0xFFEBEBEB)
     ) { padding ->
         val scrollState = rememberScrollState()
         Column(
@@ -63,7 +61,7 @@ fun HomeScreen(
                 .verticalScroll(scrollState),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            // Header personalizzato
+
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -93,7 +91,7 @@ fun HomeScreen(
                     )
                 }
             }
-            
+
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -111,7 +109,6 @@ fun HomeScreen(
                 }
             )
 
-            // IntrinsicSize.Min forza le card figlie ad assumere l'altezza della più alta, uniformandole visivamente
             Row(
                 horizontalArrangement = Arrangement.spacedBy(12.dp),
                 modifier = Modifier.height(IntrinsicSize.Min)
@@ -135,7 +132,6 @@ fun HomeScreen(
                 )
             }
 
-            // Nuova sezione I TUOI PROGRESSI DI OGGI
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(16.dp),
@@ -159,7 +155,7 @@ fun HomeScreen(
                         horizontalArrangement = Arrangement.SpaceEvenly,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        // Workout Streak
+
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
                             Text(
                                 text = "${state.workoutStreakGiorni}🔥",
@@ -174,7 +170,6 @@ fun HomeScreen(
                             )
                         }
 
-                        // Diet Streak
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
                             Text(
                                 text = "${state.dietStreakGiorni}🥗",
@@ -198,7 +193,7 @@ fun HomeScreen(
                 onCommunity = onNavigateToCommunity,
                 onProgressi = onNavigateToProgress
             )
-            
+
             Spacer(modifier = Modifier.height(32.dp))
             }
         }

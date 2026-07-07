@@ -1,5 +1,7 @@
 package com.example.gymlog_finale.ui.theme
 
+// Definizione della tipografia (font family e stili) usata dal tema.
+
 import androidx.compose.material3.Typography
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily

@@ -1,5 +1,7 @@
 package com.example.gymlog_finale.ui.home.components
 
+// Card Compose che mostra la scheda di allenamento del giorno corrente.
+
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -14,6 +16,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 
+// Composable che disegna una porzione della UI e ne gestisce lo stato locale.
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun WorkoutTodayCard(
@@ -32,14 +35,14 @@ fun WorkoutTodayCard(
         Column(modifier = Modifier.padding(16.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Icon(
-                    Icons.Default.FitnessCenter, 
-                    contentDescription = null, 
-                    tint = Color.Black, 
+                    Icons.Default.FitnessCenter,
+                    contentDescription = null,
+                    tint = Color.Black,
                     modifier = Modifier.size(24.dp)
                 )
                 Spacer(Modifier.width(8.dp))
                 Text(
-                    "Workout di oggi", 
+                    "Workout di oggi",
                     style = MaterialTheme.typography.titleLarge,
                     fontWeight = FontWeight.Bold,
                     color = Color.Black

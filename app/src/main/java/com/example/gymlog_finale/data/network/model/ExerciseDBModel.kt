@@ -1,5 +1,7 @@
 package com.example.gymlog_finale.data.network.model
 
+// DTO di risposta dell'endpoint ExerciseDB, mappati poi nel dominio applicativo.
+
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -13,6 +15,7 @@ import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonPrimitive
 
+// Data class ExerciseDBItem: aggregato immutabile di dati.
 @Serializable
 data class ExerciseDBItem(
     val bodyPart: String? = null,
@@ -30,9 +33,11 @@ data class ExerciseDBItem(
     val category: String? = null
 )
 
+// Singleton InstructionsSerializer: raccoglie funzioni/costanti condivise.
 object InstructionsSerializer : KSerializer<List<String>> {
     override val descriptor: SerialDescriptor = PrimitiveSerialDescriptor("Instructions", PrimitiveKind.STRING)
 
+    // Espone al chiamante la funzionalità indicata coordinando i livelli sottostanti.
     override fun deserialize(decoder: Decoder): List<String> {
         val input = decoder as? kotlinx.serialization.json.JsonDecoder ?: return emptyList()
         val element = input.decodeJsonElement()
@@ -43,9 +48,9 @@ object InstructionsSerializer : KSerializer<List<String>> {
         }
     }
 
+    // Espone al chiamante la funzionalità indicata coordinando i livelli sottostanti.
     override fun serialize(encoder: Encoder, value: List<String>) {
-        // Simple serialization back to a single string if needed, 
-        // though we mostly care about deserialization from the API.
+
         encoder.encodeString(value.joinToString("\n"))
     }
 }

@@ -1,5 +1,7 @@
 package com.example.gymlog_finale.ui.diet
 
+// Schermata Dieta con obiettivi giornalieri, log per fascia oraria e ricerca alimenti.
+
 import com.example.gymlog_finale.data.model.DailyDietStats
 import com.example.gymlog_finale.data.model.FoodItem
 
@@ -48,7 +50,7 @@ import com.google.mlkit.vision.codescanner.GmsBarcodeScanning
 import kotlinx.coroutines.launch
 import java.util.UUID
 
-
+// Composable che disegna una porzione della UI e ne gestisce lo stato locale.
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DietScreen(
@@ -56,14 +58,13 @@ fun DietScreen(
     onNavigateBack: () -> Unit = {},
     onNavigateToHistory: () -> Unit = {}
 ) {
-    // Stati per gestire l'apertura del menu di inserimento e la categoria selezionata
+
     var showAddMealSheet by remember { mutableStateOf(false) }
     var selectedMealCategory by remember { mutableStateOf<String?>(null) }
     var foodToEdit by remember { mutableStateOf<FoodItem?>(null) }
-    
+
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
-    
-    // Osserviamo lo stato del viewmodel
+
     val currentDayIndex by viewModel.currentDayIndex.collectAsState()
     val weeklyStats by viewModel.weeklyStats.collectAsState()
     val currentStats = weeklyStats[currentDayIndex] ?: DailyDietStats()
@@ -105,23 +106,20 @@ fun DietScreen(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(24.dp)
         ) {
-            // 1. Giorni della settimana
+
             WeekDaysRow(
                 currentDayIndex = currentDayIndex,
                 onDaySelected = { viewModel.selectDay(it) }
             )
 
-            // 2. Calorie Totali
             CaloriesCard(consumed = currentStats.consumedCalories, total = currentStats.totalCalories)
 
-            // 3. Macronutrienti
             MacrosSection(
                 carbsConsumed = currentStats.consumedCarbs.toInt(), carbsTotal = currentStats.totalCarbs.toInt(),
                 proteinsConsumed = currentStats.consumedProteins.toInt(), proteinsTotal = currentStats.totalProteins.toInt(),
                 fatsConsumed = currentStats.consumedFats.toInt(), fatsTotal = currentStats.totalFats.toInt()
             )
 
-            // 4. Lista dei pasti inseriti (Tutti i pasti)
             val groupedFoods = currentStats.foods.groupBy { it.category }
             MEAL_CATEGORIES.forEach { category ->
                 MealCategoryCard(
@@ -146,12 +144,10 @@ fun DietScreen(
         }
     }
 
-
-    // Menu a tendina inferiore (Bottom Sheet) per l'inserimento
     if (showAddMealSheet && selectedMealCategory != null) {
         ModalBottomSheet(
-            onDismissRequest = { 
-                showAddMealSheet = false 
+            onDismissRequest = {
+                showAddMealSheet = false
                 selectedMealCategory = null
                 foodToEdit = null
             },
@@ -165,21 +161,21 @@ fun DietScreen(
                     .padding(bottom = 32.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                // Form Inserimento Alimento Singolo
+
                 Text("Aggiungi a $selectedMealCategory", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
                 Spacer(modifier = Modifier.height(16.dp))
-                
+
                 AddFoodForm(
                     initialFood = foodToEdit,
                     category = selectedMealCategory!!,
-                    onCancel = { 
+                    onCancel = {
                         showAddMealSheet = false
                         selectedMealCategory = null
                         foodToEdit = null
                     },
-                    onSave = { updatedFood -> 
+                    onSave = { updatedFood ->
                         viewModel.addOrUpdateFood(updatedFood)
-                        showAddMealSheet = false 
+                        showAddMealSheet = false
                         selectedMealCategory = null
                         foodToEdit = null
                     }
@@ -189,6 +185,7 @@ fun DietScreen(
     }
 }
 
+// Composable che disegna una porzione della UI e ne gestisce lo stato locale.
 @Composable
 fun WeekDaysRow(currentDayIndex: Int, onDaySelected: (Int) -> Unit) {
     val days = listOf("Lun", "Mar", "Mer", "Gio", "Ven", "Sab", "Dom")
@@ -218,6 +215,7 @@ fun WeekDaysRow(currentDayIndex: Int, onDaySelected: (Int) -> Unit) {
     }
 }
 
+// Composable che disegna una porzione della UI e ne gestisce lo stato locale.
 @Composable
 fun CaloriesCard(consumed: Int, total: Int) {
     val progress = if (total > 0) (consumed.toFloat() / total.toFloat()).coerceIn(0f, 1f) else 0f
@@ -273,6 +271,7 @@ fun CaloriesCard(consumed: Int, total: Int) {
     }
 }
 
+// Composable che disegna una porzione della UI e ne gestisce lo stato locale.
 @Composable
 fun MacrosSection(
     carbsConsumed: Int, carbsTotal: Int,
@@ -300,6 +299,7 @@ fun MacrosSection(
     }
 }
 
+// Composable che disegna una porzione della UI e ne gestisce lo stato locale.
 @Composable
 fun MacroItem(modifier: Modifier = Modifier, name: String, consumed: Int, total: Int, color: Color) {
     val progress = if (total > 0) (consumed.toFloat() / total.toFloat()).coerceIn(0f, 1f) else 0f
@@ -308,8 +308,8 @@ fun MacroItem(modifier: Modifier = Modifier, name: String, consumed: Int, total:
         horizontalAlignment = Alignment.Start
     ) {
         Text(
-            text = name, 
-            style = MaterialTheme.typography.labelMedium, 
+            text = name,
+            style = MaterialTheme.typography.labelMedium,
             fontWeight = FontWeight.SemiBold,
             color = MaterialTheme.colorScheme.onSurface
         )
@@ -343,16 +343,15 @@ fun MacroItem(modifier: Modifier = Modifier, name: String, consumed: Int, total:
 }
 
 val MEAL_CATEGORIES = listOf(
-    "Colazione", 
-    "Spuntino Mattutino", 
-    "Pranzo", 
-    "Merenda", 
-    "Cena", 
+    "Colazione",
+    "Spuntino Mattutino",
+    "Pranzo",
+    "Merenda",
+    "Cena",
     "Spuntino Prenanna"
 )
 
-// FoodListSection removed in favor of MealCategoryCard
-
+// Composable che disegna una porzione della UI e ne gestisce lo stato locale.
 @Composable
 fun AddFoodForm(
     initialFood: FoodItem? = null,
@@ -363,30 +362,26 @@ fun AddFoodForm(
     var foodName by remember { mutableStateOf(initialFood?.name ?: "") }
     var grams by remember { mutableStateOf(initialFood?.grams?.toString() ?: "100") }
     var unit by remember { mutableStateOf(initialFood?.unit ?: "g") }
-    
-    // Valori nutritivi per 100g (ottenuti dall'API)
+
     var baseCalories by remember { mutableStateOf(0.0) }
     var baseCarbs by remember { mutableStateOf(0.0) }
     var baseProteins by remember { mutableStateOf(0.0) }
     var baseFats by remember { mutableStateOf(0.0) }
 
-    // Campi modificabili (calcolati in base ai grammi o inseriti a mano)
     var calories by remember { mutableStateOf(initialFood?.calories?.toString() ?: "") }
     var carbs by remember { mutableStateOf(initialFood?.carbs?.toString() ?: "") }
     var proteins by remember { mutableStateOf(initialFood?.proteins?.toString() ?: "") }
     var fats by remember { mutableStateOf(initialFood?.fats?.toString() ?: "") }
 
-    // Ricerca API
     var isSearching by remember { mutableStateOf(false) }
     var searchResults by remember { mutableStateOf<List<Product>>(emptyList()) }
     var showDropdown by remember { mutableStateOf(false) }
-    // Evita la ricerca automatica all'apertura se stiamo modificando un pasto esistente
+
     var justSelectedFromDropdown by remember { mutableStateOf(initialFood != null) }
     val coroutineScope = rememberCoroutineScope()
     val context = LocalContext.current
     val scanner = remember { GmsBarcodeScanning.getClient(context) }
 
-    // Aggiorna i valori quando cambiano i grammi o i valori base
     LaunchedEffect(grams, baseCalories, baseCarbs, baseProteins, baseFats) {
         val g = grams.toDoubleOrNull()
         if (g != null && baseCalories > 0) {
@@ -417,9 +412,9 @@ fun AddFoodForm(
         Box {
             OutlinedTextField(
                 value = foodName,
-                onValueChange = { 
+                onValueChange = {
                     foodName = it
-                    showDropdown = false 
+                    showDropdown = false
                 },
                 label = { Text("Cerca o inserisci nome alimento") },
                 modifier = Modifier.fillMaxWidth(),
@@ -497,7 +492,7 @@ fun AddFoodForm(
                                     }
                                 }
                                 .addOnFailureListener {
-                                    // Scansione fallita o annullata dall'utente
+
                                 }
                         }) {
                             Icon(Icons.Default.QrCodeScanner, contentDescription = "Scansiona codice a barre", modifier = Modifier.size(24.dp), tint = Color.Black)
@@ -506,7 +501,6 @@ fun AddFoodForm(
                 }
             )
 
-            // Dropdown Risultati
             if (showDropdown) {
                 Popup(
                     alignment = Alignment.TopStart,
@@ -553,7 +547,7 @@ fun AddFoodForm(
                 }
             }
         }
-        
+
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             var expandedUnit by remember { mutableStateOf(false) }
             val units = listOf("g", "ml", "pz", "oz", "lb")
@@ -631,13 +625,13 @@ fun AddFoodForm(
         }
 
         Spacer(modifier = Modifier.height(8.dp))
-        
+
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             TextButton(
-                onClick = onCancel, 
+                onClick = onCancel,
                 modifier = Modifier.weight(1f),
                 colors = ButtonDefaults.textButtonColors(contentColor = Color.Black)
             ) {
@@ -649,7 +643,7 @@ fun AddFoodForm(
                 val p = proteins.replace(",", ".").toDoubleOrNull() ?: 0.0
                 val f = fats.replace(",", ".").toDoubleOrNull() ?: 0.0
                 val g = grams.toIntOrNull() ?: 100
-                
+
                 val updatedFood = FoodItem(
                     id = initialFood?.id ?: UUID.randomUUID().toString(),
                     name = foodName.takeIf { it.isNotBlank() } ?: "Alimento",
@@ -662,7 +656,7 @@ fun AddFoodForm(
                     fats = f
                 )
                 onSave(updatedFood)
-            }, 
+            },
                 modifier = Modifier.weight(1f),
                 shape = RoundedCornerShape(12.dp),
                 colors = ButtonDefaults.buttonColors(containerColor = Color.Black, contentColor = Color.White)
@@ -673,14 +667,11 @@ fun AddFoodForm(
     }
 }
 
+// Composable che disegna una porzione della UI e ne gestisce lo stato locale.
 @Preview(showBackground = true)
 @Composable
 fun DietScreenPreview() {
     GymLogFinaleTheme {
-        // In preview we can't easily provide an Application to AndroidViewModel, 
-        // so we just call it without explicit viewmodel if possible, or leave it.
-        // Usually, viewModel() inside DietScreen will throw an error in Preview,
-        // so for simplicity we just remove the preview content or comment it.
-        // DietScreen()
+
     }
 }

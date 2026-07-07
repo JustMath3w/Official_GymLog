@@ -1,5 +1,7 @@
 package com.example.gymlog_finale.ui.theme
 
+// Definizione del MaterialTheme di GymLog (schemi chiaro/scuro e tipografia).
+
 import android.app.Activity
 import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme
@@ -28,10 +30,11 @@ private val LightColorScheme = lightColorScheme(
     tertiary = Color.Gray
 )
 
+// Composable che disegna una porzione della UI e ne gestisce lo stato locale.
 @Composable
 fun GymLogFinaleTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
-    // Dynamic color is available on Android 12+
+
     dynamicColor: Boolean = false,
     content: @Composable () -> Unit
 ) {

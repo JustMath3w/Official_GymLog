@@ -1,5 +1,7 @@
 package com.example.gymlog_finale.ui.community
 
+// Schermata Community con quattro tab (Amici, Clienti PT, Richieste, Cerca).
+
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -32,10 +34,7 @@ import com.example.gymlog_finale.data.model.User
 import com.example.gymlog_finale.ui.community.IncomingRequestUi
 import com.example.gymlog_finale.ui.community.components.*
 
-/**
- * Schermata principale Community con tab dinamici in base al ruolo dell'utente.
- * onCreateWorkoutForClient è invocato dal tab Clienti quando il PT clicca "Crea scheda".
- */
+// Composable che disegna una porzione della UI e ne gestisce lo stato locale.
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CommunityScreen(
@@ -46,7 +45,6 @@ fun CommunityScreen(
     val state by viewModel.uiState.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
 
-    // Mostra messaggi transienti come snackbar e li azzera nello state
     LaunchedEffect(state.errorMessage, state.successMessage) {
         state.errorMessage?.let {
             snackbarHostState.showSnackbar(it)
@@ -118,11 +116,11 @@ fun CommunityScreen(
                         contentAlignment = Alignment.Center
                     ) {
                         Text(
-                            title, 
+                            title,
                             fontWeight = if (selectedTab == index) FontWeight.Bold else FontWeight.Medium,
                             color = if (selectedTab == index) Color.Black else Color.Gray,
                             fontSize = 16.sp
-                        ) 
+                        )
                     }
                 }
             }

@@ -1,5 +1,7 @@
 package com.example.gymlog_finale.ui.community.components
 
+// Tab Richieste: gestione delle richieste di amicizia e di coaching ricevute.
+
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -25,6 +27,7 @@ import androidx.compose.ui.unit.sp
 import com.example.gymlog_finale.ui.community.IncomingRequestUi
 import com.example.gymlog_finale.ui.community.OutgoingRequestUi
 
+// Composable che disegna una porzione della UI e ne gestisce lo stato locale.
 @Composable
 fun RequestsTab(
     incoming: List<IncomingRequestUi>,

@@ -1,23 +1,20 @@
 package com.example.gymlog_finale.data.firebase
 
+// Sorgente Firestore che al primo avvio popola le collezioni di base con dati di default (es. alimenti comuni).
+
 import com.example.gymlog_finale.util.Constants
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.SetOptions
 import kotlinx.coroutines.tasks.await
 
-/**
- * Inizializza i documenti minimi dell'utente autenticato senza creare seed fake
- * per le collection della Community.
- */
+// Classe FirestoreBootstrapSource: unità principale definita in questo file.
 class FirestoreBootstrapSource(
     private val auth: FirebaseAuth = FirebaseAuth.getInstance(),
     private val db: FirebaseFirestore = FirebaseFirestore.getInstance()
 ) {
 
-    /**
-     * Crea o inizializza users/{uid} in merge senza sovrascrivere eventuali dati già esistenti.
-     */
+    // Espone al chiamante la funzionalità indicata coordinando i livelli sottostanti.
     suspend fun ensureUserDocument(): Result<Unit> {
         return try {
             val currentUser = auth.currentUser

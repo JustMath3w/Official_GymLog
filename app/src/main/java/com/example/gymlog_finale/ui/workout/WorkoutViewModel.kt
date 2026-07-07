@@ -1,5 +1,7 @@
 package com.example.gymlog_finale.ui.workout
 
+// ViewModel della sezione Allenamento: gestisce schede, esercizi e log delle sessioni.
+
 import com.example.gymlog_finale.data.model.Workout
 import com.example.gymlog_finale.data.model.WorkoutLog
 import com.example.gymlog_finale.data.model.Exercise
@@ -25,10 +27,7 @@ import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.launch
 import java.util.Calendar
 
-/**
- * ViewModel completo per gestire le logiche di creazione, consultazione e svolgimento
- * delle schede d'allenamento.
- */
+// Classe WorkoutViewModel: unità principale definita in questo file.
 class WorkoutViewModel : ViewModel() {
     private val repository = WorkoutRepository()
     private val exerciseRepository = ExerciseRepository()
@@ -38,22 +37,17 @@ class WorkoutViewModel : ViewModel() {
     private val _workouts = MutableStateFlow<List<Workout>>(emptyList())
     val workouts: StateFlow<List<Workout>> = _workouts.asStateFlow()
 
-    // Giorno della settimana selezionato (0=Lun, ..., 6=Dom)
     private val _currentDayIndex = MutableStateFlow(getTodayIndex())
     val currentDayIndex: StateFlow<Int> = _currentDayIndex.asStateFlow()
 
-    // Storico degli allenamenti completati
     private val _workoutLogs = MutableStateFlow<List<WorkoutLog>>(emptyList())
     val workoutLogs: StateFlow<List<WorkoutLog>> = _workoutLogs.asStateFlow()
 
-    // Scheda attualmente in esecuzione (delegata a companion object statico)
     val activeWorkout: StateFlow<Workout?> = globalActiveWorkout
 
-    // Scheda selezionata manualmente nella Lobby per oggi
     private val _selectedWorkoutForToday = MutableStateFlow<Workout?>(null)
     val selectedWorkoutForToday: StateFlow<Workout?> = _selectedWorkoutForToday.asStateFlow()
 
-    // Programmazione degli split (startDate, endDate, splitMap, overrides)
     private val _splitPlan = MutableStateFlow(SplitPlan())
     val splitPlan: StateFlow<SplitPlan> = _splitPlan.asStateFlow()
 
@@ -72,8 +66,10 @@ class WorkoutViewModel : ViewModel() {
     private val _errorMessage = MutableStateFlow<String?>(null)
     val errorMessage: StateFlow<String?> = _errorMessage.asStateFlow()
 
+    // Ripristina lo stato o i campi al valore iniziale.
     fun resetSaveSuccess() { _saveSuccess.value = false }
 
+    // Persiste l'entità sulla sorgente dati (creazione o aggiornamento).
     fun saveWorkoutForClient(clientUid: String, name: String, exercises: List<Exercise>, splitType: String) {
         viewModelScope.launch {
             _isLoading.value = true
@@ -87,17 +83,18 @@ class WorkoutViewModel : ViewModel() {
         }
     }
 
+    // Ripulisce eventuali errori mostrati all'utente.
     fun clearErrorMessage() {
         _errorMessage.value = null
     }
 
-    // ExerciseDB States
     private val _exerciseSearchResults = MutableStateFlow<List<ExerciseDBItem>>(emptyList())
     val exerciseSearchResults: StateFlow<List<ExerciseDBItem>> = _exerciseSearchResults.asStateFlow()
 
     private val _searchQuery = MutableStateFlow("")
     val searchQuery: StateFlow<String> = _searchQuery.asStateFlow()
 
+    // Recupera l'entità o il valore richiesto dalla sorgente dati.
     private fun getTodayIndex(): Int {
         return when (Calendar.getInstance().get(Calendar.DAY_OF_WEEK)) {
             Calendar.MONDAY -> 0
@@ -111,6 +108,7 @@ class WorkoutViewModel : ViewModel() {
         }
     }
 
+    // Imposta l'elemento indicato come selezione corrente nello stato UI.
     fun selectDay(index: Int) {
         _currentDayIndex.value = index
     }
@@ -122,6 +120,7 @@ class WorkoutViewModel : ViewModel() {
         observeSearchQuery()
     }
 
+    // Espone un flusso reattivo che emette gli aggiornamenti dalla sorgente dati.
     private fun observeWorkoutLogs() {
         viewModelScope.launch {
             repository.getWorkoutLogsRealtime().collect { list ->
@@ -138,6 +137,7 @@ class WorkoutViewModel : ViewModel() {
         }
     }
 
+    // Carica i dati necessari per la schermata o il caso d'uso.
     fun loadSplitPlan() {
         viewModelScope.launch {
             repository.getSplitPlan().onSuccess { plan ->
@@ -150,6 +150,7 @@ class WorkoutViewModel : ViewModel() {
         }
     }
 
+    // Persiste l'entità sulla sorgente dati (creazione o aggiornamento).
     fun saveSplitPlan(startDate: Long, endDate: Long, splitMap: Map<Int, String>) {
         viewModelScope.launch {
             _isLoading.value = true
@@ -176,6 +177,7 @@ class WorkoutViewModel : ViewModel() {
         }
     }
 
+    // Persiste l'entità sulla sorgente dati (creazione o aggiornamento).
     fun saveDailyOverride(dayIndex: Int, newSplitType: String) {
         viewModelScope.launch {
             _isLoading.value = true
@@ -201,6 +203,7 @@ class WorkoutViewModel : ViewModel() {
         }
     }
 
+    // Ripulisce lo stato o la collezione indicati.
     fun clearDailyOverride(dayIndex: Int) {
         viewModelScope.launch {
             _isLoading.value = true
@@ -226,6 +229,7 @@ class WorkoutViewModel : ViewModel() {
         }
     }
 
+    // Recupera l'entità o il valore richiesto dalla sorgente dati.
     private fun getCurrentWeekMondayCalendar(): Calendar {
         val cal = Calendar.getInstance()
         val dayOfWeek = cal.get(Calendar.DAY_OF_WEEK)
@@ -243,6 +247,7 @@ class WorkoutViewModel : ViewModel() {
         return cal
     }
 
+    // Recupera l'entità o il valore richiesto dalla sorgente dati.
     fun getDateStringForDayIndex(dayIndex: Int): String {
         val cal = getCurrentWeekMondayCalendar().apply {
             add(Calendar.DAY_OF_YEAR, dayIndex)
@@ -253,24 +258,22 @@ class WorkoutViewModel : ViewModel() {
         return String.format("%04d-%02d-%02d", year, month, day)
     }
 
+    // Recupera l'entità o il valore richiesto dalla sorgente dati.
     fun getSplitForDayIndex(dayIndex: Int): String {
         val plan = _splitPlan.value
         val dateStr = getDateStringForDayIndex(dayIndex)
 
-        // 1. Prima controlla gli override giornalieri
         if (plan.overrides.containsKey(dateStr)) {
             return plan.overrides[dateStr] ?: "Rest"
         }
 
-        // 2. Se non c'è una data di inizio/fine programmata, restituisce lo split settimanale
         if (plan.startDate == 0L || plan.endDate == 0L) {
             return plan.split[dayIndex] ?: "Rest"
         }
 
-        // 3. Controlla se la data cade nell'intervallo programmato
         val targetCal = getCurrentWeekMondayCalendar().apply {
             add(Calendar.DAY_OF_YEAR, dayIndex)
-            // Normalizza l'orario a mezzogiorno per evitare problemi di fuso orario o confini
+
             set(Calendar.HOUR_OF_DAY, 12)
             set(Calendar.MINUTE, 0)
             set(Calendar.SECOND, 0)
@@ -308,16 +311,17 @@ class WorkoutViewModel : ViewModel() {
             return plan.split[dayOfWeekIndex] ?: "Rest"
         }
 
-        // 4. Se fuori intervallo, restituiamo comunque lo split settimanale configurato
         return plan.split[dayIndex] ?: "Rest"
     }
 
+    // Predicato che verifica una condizione booleana sullo stato.
     fun hasDailyOverride(dayIndex: Int): Boolean {
         val plan = _splitPlan.value
         val dateStr = getDateStringForDayIndex(dayIndex)
         return plan.overrides.containsKey(dateStr)
     }
 
+    // Espone un flusso reattivo che emette gli aggiornamenti dalla sorgente dati.
     @OptIn(FlowPreview::class)
     private fun observeSearchQuery() {
         viewModelScope.launch {
@@ -331,6 +335,7 @@ class WorkoutViewModel : ViewModel() {
         }
     }
 
+    // Handler UI: aggiorna nello stato il campo modificato dall'utente.
     fun onSearchQueryChange(query: String) {
         _searchQuery.value = query
         if (query.length < 2) {
@@ -338,23 +343,21 @@ class WorkoutViewModel : ViewModel() {
         }
     }
 
+    // Esegue una ricerca sull'insieme dati indicato in base ai criteri forniti.
     private fun searchExercises(query: String) {
         viewModelScope.launch {
             _isLoading.value = true
-            
-            // 1. Prova prima con la mappatura locale (veloce e precisa)
+
             var searchTerms = translationRepository.getLocalTranslation(query)
             Log.d(tag, "Ricerca locale: '$query' -> '$searchTerms'")
-            
+
             var results = exerciseRepository.searchExercises(searchTerms)
-            
-            // 2. Se non trova risultati ed è diverso dalla query originale, prova a cercare con la query originaria
+
             if (results.isEmpty() && searchTerms != query) {
                 Log.d(tag, "Nessun risultato con traduzione locale, provo con query originale: '$query'")
                 results = exerciseRepository.searchExercises(query)
             }
-            
-            // 3. Fallback: Se ancora vuoto, chiediamo all'API di traduzione
+
             if (results.isEmpty()) {
                 val translated = translationRepository.translateText(query, "it|en")
                 val cleaned = translationRepository.cleanEnglishQuery(translated)
@@ -363,14 +366,12 @@ class WorkoutViewModel : ViewModel() {
                     results = exerciseRepository.searchExercises(cleaned)
                 }
             }
-            
+
             Log.d(tag, "Risultati trovati: ${results.size}")
-            
-            // 4. Traduci in blocco i nomi degli esercizi trovati
+
             val namesToTranslate = results.map { item -> item.name ?: "" }
             val translatedNames = translationRepository.translateTexts(namesToTranslate, "en|it")
-            
-            // 5. Mappa i risultati con i nomi tradotti e usa le traduzioni statiche veloci per bodyPart e target
+
             val translatedResults = results.mapIndexed { idx, item ->
                 item.copy(
                     name = translatedNames.getOrNull(idx) ?: item.name ?: "",
@@ -378,14 +379,13 @@ class WorkoutViewModel : ViewModel() {
                     target = translationRepository.translateTarget(item.target)
                 )
             }
-            
+
             _exerciseSearchResults.value = translatedResults
             _isLoading.value = false
         }
     }
 
-
-
+    // Espone un flusso reattivo che emette gli aggiornamenti dalla sorgente dati.
     private fun observeWorkouts() {
         viewModelScope.launch {
             _isLoading.value = true
@@ -404,6 +404,7 @@ class WorkoutViewModel : ViewModel() {
         }
     }
 
+    // Persiste l'entità sulla sorgente dati (creazione o aggiornamento).
     fun saveWorkout(name: String, exercises: List<Exercise>, id: String = "", splitType: String = "Rest") {
         viewModelScope.launch {
             _isLoading.value = true
@@ -419,8 +420,7 @@ class WorkoutViewModel : ViewModel() {
         }
     }
 
-
-
+    // Rimuove definitivamente l'entità indicata dalla sorgente dati.
     fun deleteWorkout(workoutId: String) {
         viewModelScope.launch {
             _isLoading.value = true
@@ -439,6 +439,7 @@ class WorkoutViewModel : ViewModel() {
         }
     }
 
+    // Espone al chiamante la funzionalità indicata coordinando i livelli sottostanti.
     fun activateWorkout(workoutId: String) {
         _globalActiveWorkoutId.value = workoutId
         val workout = workouts.value.firstOrNull { it.id == workoutId }
@@ -448,18 +449,21 @@ class WorkoutViewModel : ViewModel() {
         }
     }
 
+    // Avvia l'operazione o il flusso indicati.
     fun startWorkout(workout: Workout) {
         _globalActiveWorkout.value = workout
         _globalActiveWorkoutId.value = workout.id
         _isWorkoutMinimized.value = false
     }
 
+    // Annulla l'operazione in corso o la richiesta pendente.
     fun cancelWorkout() {
         _globalActiveWorkout.value = null
         _globalActiveWorkoutId.value = null
         _isWorkoutMinimized.value = false
     }
 
+    // Espone al chiamante la funzionalità indicata coordinando i livelli sottostanti.
     fun completeWorkout(workout: Workout, actualExercises: List<Exercise>) {
         viewModelScope.launch {
             _isLoading.value = true
@@ -499,14 +503,17 @@ class WorkoutViewModel : ViewModel() {
         }
     }
 
+    // Imposta l'elemento indicato come selezione corrente nello stato UI.
     fun selectWorkoutForToday(workout: Workout?) {
         _selectedWorkoutForToday.value = workout
     }
 
+    // Ripristina lo stato o i campi al valore iniziale.
     fun resetSuccess() {
         _saveSuccess.value = false
     }
 
+    // Ripristina lo stato o i campi al valore iniziale.
     fun resetWorkoutCompleted() {
         _workoutCompleted.value = false
     }
@@ -514,6 +521,7 @@ class WorkoutViewModel : ViewModel() {
     private val _currentExerciseDetails = MutableStateFlow<Exercise?>(null)
     val currentExerciseDetails: StateFlow<Exercise?> = _currentExerciseDetails.asStateFlow()
 
+    // Carica i dati necessari per la schermata o il caso d'uso.
     fun loadExerciseDetails(exercise: Exercise) {
         viewModelScope.launch {
             _isLoading.value = true
@@ -521,16 +529,16 @@ class WorkoutViewModel : ViewModel() {
                 if (exercise.id.isNotEmpty()) {
                     val freshData = exerciseRepository.getExerciseById(exercise.id)
                     if (freshData != null) {
-                        // Facciamo le chiamate di traduzione e ricerca in parallelo
+
                         val youtubeIdDeferred = async { exerciseRepository.searchYoutubeVideo(freshData.name ?: "") }
                         val translatedNameDeferred = async { translationRepository.translateText(freshData.name ?: "") }
                         val translatedBodyPartDeferred = async { translationRepository.translateText(freshData.bodyPart ?: "") }
                         val translatedTargetDeferred = async { translationRepository.translateText(freshData.target ?: "") }
-                        
-                        val translatedInstructionsDeferreds = freshData.instructions.map { 
-                            async { translationRepository.translateText(it) } 
+
+                        val translatedInstructionsDeferreds = freshData.instructions.map {
+                            async { translationRepository.translateText(it) }
                         }
-                        
+
                         val youtubeId = youtubeIdDeferred.await()
                         val translatedName = translatedNameDeferred.await()
                         val translatedBodyPart = translatedBodyPartDeferred.await()
@@ -557,14 +565,17 @@ class WorkoutViewModel : ViewModel() {
         }
     }
 
+    // Ripulisce lo stato o la collezione indicati.
     fun clearExerciseDetails() {
         _currentExerciseDetails.value = null
     }
 
+    // Aggiorna il campo indicato nello stato interno.
     fun setWorkoutMinimized(minimized: Boolean) {
         Companion.setWorkoutMinimized(minimized)
     }
 
+    // Companion object: raccoglie factory e costanti associate alla classe.
     companion object {
         private val _globalActiveWorkout = MutableStateFlow<Workout?>(null)
         val globalActiveWorkout: StateFlow<Workout?> = _globalActiveWorkout.asStateFlow()

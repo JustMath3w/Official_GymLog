@@ -1,5 +1,7 @@
 package com.example.gymlog_finale.ui.diet
 
+// ViewModel della schermata Dieta: coordina ricerca alimenti, log pasti e aggregati giornalieri.
+
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import com.google.firebase.auth.FirebaseAuth
@@ -15,6 +17,7 @@ import java.util.UUID
 import com.example.gymlog_finale.data.model.DailyDietStats
 import com.example.gymlog_finale.data.model.FoodItem
 
+// Classe DietViewModel: unità principale definita in questo file.
 class DietViewModel(application: Application) : AndroidViewModel(application) {
     private val auth = FirebaseAuth.getInstance()
     private val db = FirebaseFirestore.getInstance()
@@ -43,6 +46,7 @@ class DietViewModel(application: Application) : AndroidViewModel(application) {
         loadDataFromFirestore()
     }
 
+    // Recupera l'entità o il valore richiesto dalla sorgente dati.
     private fun getCurrentYearAndWeek(): Pair<Int, Int> {
         val cal = Calendar.getInstance()
         cal.firstDayOfWeek = Calendar.MONDAY
@@ -51,6 +55,7 @@ class DietViewModel(application: Application) : AndroidViewModel(application) {
         return Pair(year, week)
     }
 
+    // Recupera l'entità o il valore richiesto dalla sorgente dati.
     private fun getDateForDayIndex(year: Int, week: Int, dayIndex: Int): Calendar {
         val cal = Calendar.getInstance()
         cal.firstDayOfWeek = Calendar.MONDAY
@@ -61,12 +66,13 @@ class DietViewModel(application: Application) : AndroidViewModel(application) {
         return cal
     }
 
+    // Persiste l'entità sulla sorgente dati (creazione o aggiornamento).
     private fun saveToCalendarioDieta(uid: String, dayIndex: Int, stats: DailyDietStats) {
         val cal = getDateForDayIndex(currentYear, currentWeek, dayIndex)
         val y = cal.get(Calendar.YEAR)
-        val m = cal.get(Calendar.MONTH) + 1 // 1-indexed for readability
+        val m = cal.get(Calendar.MONTH) + 1
         val d = cal.get(Calendar.DAY_OF_MONTH)
-        
+
         val docId = "${y}_${m}_${d}"
         db.collection("CalendarDiet").document(uid).collection("days").document(docId)
             .set(stats, SetOptions.merge())
@@ -77,6 +83,7 @@ class DietViewModel(application: Application) : AndroidViewModel(application) {
 
     private val userId: String? get() = auth.currentUser?.uid
 
+    // Carica i dati necessari per la schermata o il caso d'uso.
     private fun loadDataFromFirestore() {
         val uid = userId
         if (uid == null) {
@@ -84,7 +91,6 @@ class DietViewModel(application: Application) : AndroidViewModel(application) {
             return
         }
 
-        // 1. Fetch diet_goals from CalendarDiet
         db.collection("CalendarDiet").document(uid).get().addOnSuccessListener { doc ->
             val goals = doc.get("diet_goals") as? Map<String, Any>
             val cal = (goals?.get("calories") as? Number)?.toInt() ?: 2000
@@ -94,7 +100,6 @@ class DietViewModel(application: Application) : AndroidViewModel(application) {
 
             val defaultStats = DailyDietStats(cal, carbs, prot, fats)
 
-            // 2. Fetch current week data from CalendarDiet/uid/days
             val daysList = (0..6).map { dayIndex ->
                 val c = getDateForDayIndex(currentYear, currentWeek, dayIndex)
                 val y = c.get(Calendar.YEAR)
@@ -117,7 +122,7 @@ class DietViewModel(application: Application) : AndroidViewModel(application) {
                     for (i in 0..6) {
                         val docId = daysList[i]
                         val dayDoc = docsMap[docId]
-                        
+
                         if (dayDoc != null && dayDoc.exists()) {
                             val stats = dayDoc.toObject(DailyDietStats::class.java)
                             if (stats != null) {
@@ -125,7 +130,7 @@ class DietViewModel(application: Application) : AndroidViewModel(application) {
                                 val tCarbs = if (stats.totalCarbs > 0.0) stats.totalCarbs else carbs
                                 val tProt = if (stats.totalProteins > 0.0) stats.totalProteins else prot
                                 val tFats = if (stats.totalFats > 0.0) stats.totalFats else fats
-                                
+
                                 newWeeklyStats[i] = stats.copy(
                                     totalCalories = tCal,
                                     totalCarbs = tCarbs,
@@ -147,6 +152,7 @@ class DietViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
+    // Espone al chiamante la funzionalità indicata coordinando i livelli sottostanti.
     fun checkWeekAndResetIfNeeded() {
         val (year, week) = getCurrentYearAndWeek()
         if (year != currentYear || week != currentWeek) {
@@ -154,30 +160,31 @@ class DietViewModel(application: Application) : AndroidViewModel(application) {
             currentWeek = week
             _isLoading.value = true
             loadDataFromFirestore()
-            
+
             val cal = Calendar.getInstance()
             val day = cal.get(Calendar.DAY_OF_WEEK)
             _currentDayIndex.value = if (day == Calendar.SUNDAY) 6 else day - 2
         }
     }
 
-
+    // Imposta l'elemento indicato come selezione corrente nello stato UI.
     fun selectDay(index: Int) {
         checkWeekAndResetIfNeeded()
         _currentDayIndex.value = index
     }
 
+    // Aggiunge un elemento alla collezione o allo stato correnti.
     fun addOrUpdateFood(food: FoodItem) {
         checkWeekAndResetIfNeeded()
         val uid = userId ?: return
-        
+
         var finalStats: DailyDietStats? = null
         var finalDayIndex: Int = -1
 
         _weeklyStats.update { currentMap ->
             val dayIndex = _currentDayIndex.value
             val currentStats = currentMap[dayIndex] ?: DailyDietStats()
-            
+
             val existingIndex = currentStats.foods.indexOfFirst { it.id == food.id }
             val newFoods = currentStats.foods.toMutableList()
             if (existingIndex >= 0) {
@@ -185,42 +192,43 @@ class DietViewModel(application: Application) : AndroidViewModel(application) {
             } else {
                 newFoods.add(food)
             }
-            
+
             val updatedStats = currentStats.copy(foods = newFoods)
             finalStats = updatedStats
             finalDayIndex = dayIndex
-            
+
             currentMap.toMutableMap().apply {
                 this[dayIndex] = updatedStats
             }
         }
-        
+
         finalStats?.let {
             saveToCalendarioDieta(uid, finalDayIndex, it)
         }
     }
 
+    // Rimuove definitivamente l'entità indicata dalla sorgente dati.
     fun deleteFood(food: FoodItem) {
         checkWeekAndResetIfNeeded()
         val uid = userId ?: return
-        
+
         var finalStats: DailyDietStats? = null
         var finalDayIndex: Int = -1
 
         _weeklyStats.update { currentMap ->
             val dayIndex = _currentDayIndex.value
             val currentStats = currentMap[dayIndex] ?: DailyDietStats()
-            
+
             val newFoods = currentStats.foods.filter { it.id != food.id }
             val updatedStats = currentStats.copy(foods = newFoods)
             finalStats = updatedStats
             finalDayIndex = dayIndex
-            
+
             currentMap.toMutableMap().apply {
                 this[dayIndex] = updatedStats
             }
         }
-        
+
         finalStats?.let {
             saveToCalendarioDieta(uid, finalDayIndex, it)
         }

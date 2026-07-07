@@ -1,11 +1,10 @@
 package com.example.gymlog_finale.ui.home
 
+// Data class immutabile che rappresenta lo stato UI della schermata Home.
+
 import com.example.gymlog_finale.data.model.User
 
-/**
- * Stato immutabile della HomeScreen.
- * Contiene il riepilogo utente, calorie giornaliere e streak principali mostrate nella home.
- */
+// Data class HomeUiState: aggregato immutabile di dati.
 data class HomeUiState(
     val user: User? = null,
     val workoutOdierno: String? = null,

@@ -1,5 +1,7 @@
 package com.example.gymlog_finale.ui.auth.register
 
+// Secondo step del wizard di registrazione (credenziali, dati fisici, obiettivo, flag PT).
+
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.background
 import androidx.compose.ui.graphics.Color
@@ -52,10 +54,7 @@ import com.example.gymlog_finale.ui.auth.components.AuthTextField
 
 private val obiettivi = listOf("Perdita di peso", "Aumento massa", "Mantenimento", "Resistenza", "Forza")
 
-/**
- * Secondo step di registrazione: raccoglie username, password, dati fisici e obiettivo.
- * Al completamento crea l'account Firebase e salva il profilo su Firestore.
- */
+// Composable che disegna una porzione della UI e ne gestisce lo stato locale.
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RegisterStep2Screen(
@@ -136,7 +135,6 @@ fun RegisterStep2Screen(
             }
         )
 
-        // Dropdown per la selezione obiettivo
         ExposedDropdownMenuBox(
             expanded = obiettivoExpanded,
             onExpandedChange = { obiettivoExpanded = it }
@@ -197,7 +195,6 @@ fun RegisterStep2Screen(
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal)
         )
 
-        // Toggle Personal Trainer
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,

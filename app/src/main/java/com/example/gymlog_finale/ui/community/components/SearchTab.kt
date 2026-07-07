@@ -1,5 +1,7 @@
 package com.example.gymlog_finale.ui.community.components
 
+// Tab Cerca: ricerca utenti sull'intera piattaforma con filtro per soli Personal Trainer.
+
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -15,6 +17,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.example.gymlog_finale.data.model.User
 
+// Composable che disegna una porzione della UI e ne gestisce lo stato locale.
 @Composable
 fun SearchTab(
     query: String,

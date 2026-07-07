@@ -1,5 +1,7 @@
 package com.example.gymlog_finale.navigation
 
+// Grafo di navigazione Compose centralizzato: definisce tutte le destinazioni e i loro argomenti.
+
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.navigation.NavHostController
@@ -26,6 +28,7 @@ import java.net.URLDecoder
 import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
 
+// Singleton Routes: raccoglie funzioni/costanti condivise.
 object Routes {
     const val LOGIN = "login"
     const val REGISTER_STEP1 = "register_step1"
@@ -40,9 +43,7 @@ object Routes {
     const val PROFILE = "profile"
     const val PT_CREATE_WORKOUT = "pt_create_workout/{clientUid}/{clientName}"
 
-    /**
-     * Builder helper per costruire la route concreta con encoding URL del nome cliente.
-     */
+    // Espone al chiamante la funzionalità indicata coordinando i livelli sottostanti.
     fun ptCreateWorkout(clientUid: String, clientName: String): String {
         val safeName = clientName.ifBlank { "Cliente" }
         val encoded = URLEncoder.encode(safeName, StandardCharsets.UTF_8.toString())
@@ -50,12 +51,7 @@ object Routes {
     }
 }
 
-/**
- * Grafo di navigazione principale.
- * RegisterViewModel è condiviso tra Step1, Step2 e GoogleOnboarding
- * per mantenere i dati inseriti attraverso i vari step.
- * startDestination dipende dalla sessione Firebase attiva.
- */
+// Composable che disegna una porzione della UI e ne gestisce lo stato locale.
 @Composable
 fun AppNavGraph(navController: NavHostController = rememberNavController()) {
 

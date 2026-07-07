@@ -1,5 +1,7 @@
 package com.example.gymlog_finale.ui.auth.register
 
+// Schermata di completamento profilo mostrata dopo il primo login con Google.
+
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -37,11 +39,7 @@ import com.example.gymlog_finale.ui.auth.components.AuthTextField
 
 private val obiettivi = listOf("Perdita di peso", "Aumento massa", "Mantenimento", "Resistenza", "Forza")
 
-/**
- * Schermata di onboarding per utenti che si registrano tramite Google.
- * Nome, cognome ed email sono già pre-popolati dal profilo Google.
- * Raccoglie solo i dati mancanti: username, obiettivo, anno di nascita, altezza, peso.
- */
+// Composable che disegna una porzione della UI e ne gestisce lo stato locale.
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun GoogleOnboardingScreen(

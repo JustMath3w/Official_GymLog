@@ -1,5 +1,7 @@
 package com.example.gymlog_finale.ui.progress
 
+// ViewModel dei Progressi: espone log peso, foto e aggregati statistici.
+
 import android.content.Context
 import android.net.Uri
 import androidx.lifecycle.ViewModel
@@ -25,10 +27,7 @@ import java.time.LocalDate
 import java.time.ZoneId
 import java.time.temporal.ChronoUnit
 
-/**
- * Gestisce lo stato della schermata Progressi recuperando i dati reali
- * dai log peso/foto, dai workout logs completati e dai giorni dieta validi.
- */
+// Classe ProgressViewModel: unità principale definita in questo file.
 class ProgressViewModel : ViewModel() {
 
     private val authSource = FirebaseAuthSource()
@@ -51,9 +50,7 @@ class ProgressViewModel : ViewModel() {
         loadDietProgressData()
     }
 
-    /**
-     * Aggiorna il testo di ricerca esercizio nella UI.
-     */
+    // Handler UI: aggiorna nello stato il campo modificato dall'utente.
     fun onExerciseQueryChange(value: String) {
         _uiState.update { currentState ->
             currentState.copy(
@@ -63,9 +60,7 @@ class ProgressViewModel : ViewModel() {
         }
     }
 
-    /**
-     * Aggiorna la metrica selezionata per il grafico esercizio.
-     */
+    // Handler UI: reagisce alla selezione dell'elemento indicato.
     fun onMetricSelected(metric: ExerciseProgressMetric) {
         _uiState.update { currentState ->
             currentState.copy(
@@ -74,9 +69,7 @@ class ProgressViewModel : ViewModel() {
         }
     }
 
-    /**
-     * Recupera il peso corrente dal profilo utente per precompilare il dialog di inserimento progresso.
-     */
+    // Carica i dati necessari per la schermata o il caso d'uso.
     fun loadCurrentProfileWeight(onLoaded: (Double) -> Unit) {
         viewModelScope.launch {
             val userId = authSource.getCurrentUserId()
@@ -103,9 +96,7 @@ class ProgressViewModel : ViewModel() {
         }
     }
 
-    /**
-     * Cerca i progressi reali di un esercizio usando i workout logs completati.
-     */
+    // Esegue una ricerca sull'insieme dati indicato in base ai criteri forniti.
     fun searchExerciseProgress() {
         val query = _uiState.value.exerciseQuery.trim()
 
@@ -165,9 +156,7 @@ class ProgressViewModel : ViewModel() {
         }
     }
 
-    /**
-     * Salva un nuovo progresso usando il peso inserito e una foto opzionale.
-     */
+    // Aggiunge un elemento alla collezione o allo stato correnti.
     fun addProgressLog(
         context: Context,
         weightText: String,
@@ -243,9 +232,7 @@ class ProgressViewModel : ViewModel() {
         }
     }
 
-    /**
-     * Carica i log reali di peso/foto dell'utente autenticato e aggiorna lo stato UI.
-     */
+    // Carica i dati necessari per la schermata o il caso d'uso.
     fun loadProgressData() {
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, errorMessage = null) }
@@ -281,9 +268,7 @@ class ProgressViewModel : ViewModel() {
         }
     }
 
-    /**
-     * Carica i giorni dieta dell'utente e seleziona quelli con almeno 3 categorie diverse.
-     */
+    // Carica i dati necessari per la schermata o il caso d'uso.
     private fun loadDietProgressData() {
         viewModelScope.launch {
             val userId = authSource.getCurrentUserId()
@@ -325,9 +310,7 @@ class ProgressViewModel : ViewModel() {
         }
     }
 
-    /**
-     * Osserva i workout logs completati dell'utente per aggiornare statistiche e top esercizi.
-     */
+    // Espone un flusso reattivo che emette gli aggiornamenti dalla sorgente dati.
     private fun observeWorkoutLogs() {
         viewModelScope.launch {
             workoutRepository.getWorkoutLogsRealtime().collectLatest { logs ->
@@ -344,9 +327,7 @@ class ProgressViewModel : ViewModel() {
         }
     }
 
-    /**
-     * Applica allo stato UI i dati combinati provenienti da progress logs, workout logs e dieta.
-     */
+    // Funzione di supporto interna alla classe.
     private fun applyCombinedUiState() {
         val photos = cachedProgressLogs.map { it.toProgressPhotoItem() }
 
@@ -381,9 +362,7 @@ class ProgressViewModel : ViewModel() {
         }
     }
 
-    /**
-     * Converte un log persistente in un elemento foto pronto per la UI.
-     */
+    // Funzione di supporto interna alla classe.
     private fun ProgressLog.toProgressPhotoItem(): ProgressPhotoItem {
         return ProgressPhotoItem(
             id = id,
@@ -393,9 +372,7 @@ class ProgressViewModel : ViewModel() {
         )
     }
 
-    /**
-     * Costruisce le statistiche sintetiche mostrate nella schermata progressi.
-     */
+    // Funzione di supporto interna alla classe.
     private fun buildStatsItems(
         progressLogs: List<ProgressLog>,
         workoutLogs: List<WorkoutLog>,
@@ -414,9 +391,7 @@ class ProgressViewModel : ViewModel() {
         )
     }
 
-    /**
-     * Costruisce la classifica dei top esercizi in base alle occorrenze nei workout logs.
-     */
+    // Funzione di supporto interna alla classe.
     private fun buildTopExercises(workoutLogs: List<WorkoutLog>): List<TopExerciseItem> {
         return workoutLogs
             .flatMap { it.exercises }
@@ -434,9 +409,7 @@ class ProgressViewModel : ViewModel() {
             }
     }
 
-    /**
-     * Elimina un progresso esistente usando l'id del log e aggiorna i dati mostrati in UI.
-     */
+    // Rimuove definitivamente l'entità indicata dalla sorgente dati.
     fun deleteProgressPhoto(photoItem: ProgressPhotoItem) {
         val userId = authSource.getCurrentUserId()
 
@@ -482,9 +455,7 @@ class ProgressViewModel : ViewModel() {
         }
     }
 
-    /**
-     * Costruisce i punti del grafico esercizio dai workout logs.
-     */
+    // Funzione di supporto interna alla classe.
     private fun buildExerciseProgressPoints(
         query: String,
         metric: ExerciseProgressMetric
@@ -528,9 +499,7 @@ class ProgressViewModel : ViewModel() {
             }
     }
 
-    /**
-     * Calcola la streak attuale in giorni distinti consecutivi per i workout.
-     */
+    // Calcola l'aggregato richiesto a partire dai dati forniti.
     private fun calculateWorkoutStreak(workoutLogs: List<WorkoutLog>): Int {
         val distinctDates = workoutLogs
             .map { it.completedAt.toLocalDate() }
@@ -564,9 +533,7 @@ class ProgressViewModel : ViewModel() {
         return streak
     }
 
-    /**
-     * Calcola la streak attuale in giorni consecutivi con almeno 3 categorie dieta diverse.
-     */
+    // Calcola l'aggregato richiesto a partire dai dati forniti.
     private fun calculateDietStreak(qualifiedDays: List<LocalDate>): Int {
         if (qualifiedDays.isEmpty()) return 0
 
@@ -596,9 +563,7 @@ class ProgressViewModel : ViewModel() {
         return streak
     }
 
-    /**
-     * Estrae il massimo valore numerico presente in una stringa CSV.
-     */
+    // Funzione di supporto interna alla classe.
     private fun parseMaxNumericValue(raw: String): Double {
         return raw.split(",")
             .mapNotNull { token ->
@@ -607,18 +572,14 @@ class ProgressViewModel : ViewModel() {
             .maxOrNull() ?: 0.0
     }
 
-    /**
-     * Converte un timestamp epoch millis in LocalDate nel fuso locale.
-     */
+    // Funzione di supporto interna alla classe.
     private fun Long.toLocalDate(): LocalDate {
         return Instant.ofEpochMilli(this)
             .atZone(ZoneId.systemDefault())
             .toLocalDate()
     }
 
-    /**
-     * Converte il documentId CalendarDiet nel formato yyyy_m_d in LocalDate.
-     */
+    // Funzione di supporto interna alla classe.
     private fun String.toLocalDateFromDietDocumentId(): LocalDate? {
         val parts = split("_")
         if (parts.size != 3) return null

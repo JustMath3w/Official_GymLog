@@ -1,5 +1,7 @@
 package com.example.gymlog_finale.ui.auth.login
 
+// ViewModel della schermata di login: espone lo stato via StateFlow e coordina AuthRepository.
+
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.gymlog_finale.data.firebase.FirebaseAuthSource
@@ -12,6 +14,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
+// Classe LoginViewModel: unità principale definita in questo file.
 class LoginViewModel : ViewModel() {
 
     private val authSource = FirebaseAuthSource()
@@ -22,15 +25,17 @@ class LoginViewModel : ViewModel() {
     private val _uiState = MutableStateFlow(LoginUiState())
     val uiState: StateFlow<LoginUiState> = _uiState.asStateFlow()
 
+    // Handler UI: aggiorna nello stato il campo modificato dall'utente.
     fun onEmailChange(value: String) {
         _uiState.update { it.copy(email = value, errorMessage = null) }
     }
 
+    // Handler UI: aggiorna nello stato il campo modificato dall'utente.
     fun onPasswordChange(value: String) {
         _uiState.update { it.copy(password = value, errorMessage = null) }
     }
 
-    /** Avvia il login con email e password tramite Firebase. */
+    // Esegue il login dell'utente con le credenziali fornite.
     fun login() {
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, errorMessage = null) }
@@ -49,10 +54,7 @@ class LoginViewModel : ViewModel() {
         }
     }
 
-    /**
-     * Dopo il sign-in Google controlla se l'utente esiste già su Firestore.
-     * Se esiste naviga alla Home, altrimenti avvia l'onboarding.
-     */
+    // Esegue il login dell'utente con le credenziali fornite.
     fun loginWithGoogle(idToken: String, onSetGoogleData: (uid: String, nome: String, cognome: String, email: String) -> Unit) {
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, errorMessage = null) }
@@ -78,10 +80,12 @@ class LoginViewModel : ViewModel() {
         }
     }
 
+    // Espone al chiamante la funzionalità indicata coordinando i livelli sottostanti.
     fun onLoginHandled() {
         _uiState.update { it.copy(isLoginSuccess = false) }
     }
 
+    // Espone al chiamante la funzionalità indicata coordinando i livelli sottostanti.
     fun onGoogleOnboardingHandled() {
         _uiState.update { it.copy(navigateToGoogleOnboarding = false) }
     }

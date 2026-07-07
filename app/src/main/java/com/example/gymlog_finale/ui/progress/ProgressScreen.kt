@@ -1,9 +1,10 @@
 package com.example.gymlog_finale.ui.progress
 
+// Schermata Progressi: grafici del peso, foto e statistiche di aderenza agli allenamenti.
+
 import androidx.compose.runtime.rememberCoroutineScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.delay
-
 
 import android.content.Context
 import androidx.compose.ui.graphics.Color
@@ -84,10 +85,7 @@ import com.github.mikephil.charting.formatter.ValueFormatter
 import java.io.File
 import java.time.format.DateTimeFormatter
 
-/**
- * Schermata progressi che mostra andamento peso, confronto foto
- * e area dedicata alla ricerca del progresso di un esercizio.
- */
+// Composable che disegna una porzione della UI e ne gestisce lo stato locale.
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
 fun ProgressScreen(
@@ -224,10 +222,7 @@ fun ProgressScreen(
     }
 }
 
-/**
- * Dialog che consente l'inserimento di un nuovo progresso con peso
- * precompilato dal profilo e foto opzionale da galleria o fotocamera.
- */
+// Composable che disegna una porzione della UI e ne gestisce lo stato locale.
 @Composable
 private fun AddProgressDialog(
     viewModel: ProgressViewModel,
@@ -372,9 +367,7 @@ private fun AddProgressDialog(
     )
 }
 
-/**
- * Crea un Uri temporaneo usato dalla fotocamera per salvare lo scatto in un file locale.
- */
+// Crea una nuova entità e la persiste sulla sorgente dati.
 private fun createTempImageUri(context: Context): Uri {
     val directory = File(context.cacheDir, "progress_images").apply {
         mkdirs()
@@ -393,9 +386,7 @@ private fun createTempImageUri(context: Context): Uri {
     )
 }
 
-/**
- * Mostra il confronto tra prima e ultima foto disponibili.
- */
+// Composable che disegna una porzione della UI e ne gestisce lo stato locale.
 @Composable
 private fun PhotoComparisonSection(
     firstPhoto: ProgressPhotoItem?,
@@ -442,9 +433,7 @@ private fun PhotoComparisonSection(
     }
 }
 
-/**
- * Mostra tutte le foto con possibilità di scorrimento ed eliminazione.
- */
+// Composable che disegna una porzione della UI e ne gestisce lo stato locale.
 @Composable
 private fun AllPhotosDialog(
     photos: List<ProgressPhotoItem>,
@@ -532,10 +521,7 @@ private fun AllPhotosDialog(
     )
 }
 
-/**
- * Mostra una card foto con peso e data.
- * Se è disponibile un'immagine la renderizza dal file locale, altrimenti mostra un placeholder.
- */
+// Composable che disegna una porzione della UI e ne gestisce lo stato locale.
 @Composable
 private fun ProgressPhotoCard(
     modifier: Modifier = Modifier,
@@ -596,9 +582,7 @@ private fun ProgressPhotoCard(
     }
 }
 
-/**
- * Mostra le statistiche sintetiche e il grafico peso nel tempo.
- */
+// Composable che disegna una porzione della UI e ne gestisce lo stato locale.
 @Composable
 private fun StatsSection(
     statsItems: List<ProgressStatItem>,
@@ -635,9 +619,7 @@ private fun StatsSection(
     }
 }
 
-/**
- * Mostra un grafico lineare dell'andamento peso nel tempo usando MPAndroidChart.
- */
+// Composable che disegna una porzione della UI e ne gestisce lo stato locale.
 @Composable
 private fun WeightLineChart(
     points: List<WeightChartPoint>,
@@ -738,9 +720,8 @@ private fun WeightLineChart(
         }
     )
 }
-/**
- * Mostra una statistica compatta in formato card.
- */
+
+// Composable che disegna una porzione della UI e ne gestisce lo stato locale.
 @Composable
 private fun StatCard(item: ProgressStatItem) {
     Card(modifier = Modifier.width(160.dp), colors = CardDefaults.cardColors(containerColor = Color.White)) {
@@ -763,9 +744,7 @@ private fun StatCard(item: ProgressStatItem) {
     }
 }
 
-/**
- * Mostra la classifica degli esercizi più eseguiti.
- */
+// Composable che disegna una porzione della UI e ne gestisce lo stato locale.
 @Composable
 private fun TopExercisesSection(
     topExercises: List<TopExerciseItem>
@@ -810,9 +789,7 @@ private fun TopExercisesSection(
     }
 }
 
-/**
- * Mostra la sezione per cercare il progresso di un esercizio.
- */
+// Composable che disegna una porzione della UI e ne gestisce lo stato locale.
 @Composable
 private fun ExerciseProgressSection(
     exerciseQuery: String,
@@ -923,9 +900,7 @@ private fun ExerciseProgressSection(
     }
 }
 
-/**
- * Mostra una card testuale per i dati esercizio, mantenendo la stessa UI esistente.
- */
+// Composable che disegna una porzione della UI e ne gestisce lo stato locale.
 @Composable
 private fun ExerciseProgressChartCard(
     title: String,

@@ -1,5 +1,7 @@
 package com.example.gymlog_finale.ui.diet.components
 
+// Card Compose che rappresenta una singola categoria di pasto (colazione, pranzo, ecc.).
+
 import com.example.gymlog_finale.data.model.FoodItem
 
 import androidx.compose.animation.AnimatedVisibility
@@ -29,6 +31,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 
+// Data class MealCategoryInfo: aggregato immutabile di dati.
 data class MealCategoryInfo(val name: String, val icon: ImageVector, val color: Color)
 
 val mealCategoryDetails = mapOf(
@@ -40,6 +43,7 @@ val mealCategoryDetails = mapOf(
     "Spuntino Prenanna" to MealCategoryInfo("Spuntino Prenanna", Icons.Outlined.Nightlight, Color(0xFF90A4AE))
 )
 
+// Composable che disegna una porzione della UI e ne gestisce lo stato locale.
 @Composable
 fun MealCategoryCard(
     categoryName: String,
@@ -67,7 +71,7 @@ fun MealCategoryCard(
                     .height(IntrinsicSize.Min),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                // Barra laterale
+
                 Box(
                     modifier = Modifier
                         .width(4.dp)
@@ -76,7 +80,7 @@ fun MealCategoryCard(
                         .clip(RoundedCornerShape(2.dp))
                         .background(details.color)
                 )
-                
+
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -97,9 +101,9 @@ fun MealCategoryCard(
                             modifier = Modifier.size(24.dp)
                         )
                     }
-                    
+
                     Spacer(modifier = Modifier.width(16.dp))
-                    
+
                     Column(modifier = Modifier.weight(1f)) {
                         Text(
                             text = categoryName,
@@ -113,16 +117,16 @@ fun MealCategoryCard(
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
-                    
+
                     Text(
                         text = "$totalCalories kcal",
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.onSurface
                     )
-                    
+
                     Spacer(modifier = Modifier.width(16.dp))
-                    
+
                     Icon(
                         imageVector = if (expanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
                         contentDescription = if (expanded) "Comprimi" else "Espandi",
@@ -131,7 +135,6 @@ fun MealCategoryCard(
                 }
             }
 
-            // Content
             AnimatedVisibility(visible = expanded) {
                 Column(
                     modifier = Modifier

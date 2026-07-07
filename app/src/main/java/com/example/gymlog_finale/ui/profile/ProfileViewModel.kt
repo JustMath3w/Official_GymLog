@@ -1,5 +1,7 @@
 package com.example.gymlog_finale.ui.profile
 
+// ViewModel del Profilo: gestisce aggiornamento dati, foto profilo e logout.
+
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.gymlog_finale.data.firebase.FirebaseUserSource
@@ -11,11 +13,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-/**
- * Stato della ProfileScreen.
- * - successMessage / errorMessage: feedback transienti consumati dalla UI via clearMessages()
- * - isSaving: blocca i dialog mentre un'operazione è in corso
- */
+// Data class ProfileUiState: aggregato immutabile di dati.
 data class ProfileUiState(
     val user: User? = null,
     val isLoading: Boolean = false,
@@ -24,11 +22,7 @@ data class ProfileUiState(
     val successMessage: String? = null
 )
 
-/**
- * ViewModel della ProfileScreen: gestisce caricamento profilo, modifiche puntuali
- * (campo singolo via dialog), cambio password con reauth, reset password via mail,
- * eliminazione account. Tutte le operazioni espongono feedback in uiState.
- */
+// Classe ProfileViewModel: unità principale definita in questo file.
 class ProfileViewModel(
     private val userRepository: UserRepository = FirebaseUserSource()
 ) : ViewModel() {
@@ -40,7 +34,7 @@ class ProfileViewModel(
         loadProfile()
     }
 
-    /** Carica il profilo dell'utente autenticato; gestisce l'assenza di sessione. */
+    // Carica i dati necessari per la schermata o il caso d'uso.
     fun loadProfile() {
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, errorMessage = null) }
@@ -56,12 +50,7 @@ class ProfileViewModel(
         }
     }
 
-    /**
-     * Aggiornamento parziale del documento utente. Per il campo 'username'
-     * verifica prima l'unicità (escludendo se stesso) e blocca l'update se occupato.
-     *
-     * 'value' è Any? per supportare i tipi misti: String, Int, Double, Boolean.
-     */
+    // Aggiorna i campi indicati dell'entità sulla sorgente dati.
     fun updateField(fieldKey: String, value: Any?) {
         val uid = userRepository.getCurrentUid() ?: run {
             _uiState.update { it.copy(errorMessage = "Sessione non valida") }
@@ -94,10 +83,7 @@ class ProfileViewModel(
         }
     }
 
-    /**
-     * Cambia la password dell'utente corrente reautenticando prima con la password vecchia.
-     * Firebase richiede reauth se il login risale a > ~5 minuti.
-     */
+    // Gestisce operazioni relative alla password (aggiornamento o reset).
     fun changePassword(oldPassword: String, newPassword: String) {
         if (newPassword.length < 6) {
             _uiState.update { it.copy(errorMessage = "La nuova password deve avere almeno 6 caratteri") }
@@ -122,7 +108,7 @@ class ProfileViewModel(
         }
     }
 
-    /** Invia mail di reset password all'indirizzo dell'utente corrente. */
+    // Avvia il flusso di reset password inviando la mail di ripristino.
     fun sendResetPasswordEmail() {
         val email = _uiState.value.user?.email
         if (email.isNullOrBlank()) {
@@ -143,10 +129,7 @@ class ProfileViewModel(
         }
     }
 
-    /**
-     * Elimina l'account dopo reauth con la password fornita.
-     * onSuccess viene invocato dalla UI per navigare al login.
-     */
+    // Rimuove definitivamente l'entità indicata dalla sorgente dati.
     fun deleteAccount(password: String, onSuccess: () -> Unit) {
         viewModelScope.launch {
             _uiState.update { it.copy(isSaving = true, errorMessage = null) }
@@ -168,12 +151,12 @@ class ProfileViewModel(
         }
     }
 
-    /** Esegue il logout invalidando la sessione Firebase. */
+    // Termina la sessione utente corrente e ripulisce lo stato locale.
     fun logout() {
         userRepository.logout()
     }
 
-    /** Reset dei messaggi transienti dopo che la UI li ha mostrati. */
+    // Ripulisce lo stato o la collezione indicati.
     fun clearMessages() {
         _uiState.update { it.copy(errorMessage = null, successMessage = null) }
     }

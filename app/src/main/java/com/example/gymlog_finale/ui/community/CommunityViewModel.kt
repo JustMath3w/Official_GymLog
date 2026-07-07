@@ -1,5 +1,7 @@
 package com.example.gymlog_finale.ui.community
 
+// ViewModel della schermata Community: aggrega dati da FriendshipRepository e UserRepository.
+
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.gymlog_finale.data.firebase.FirebaseFriendshipSource
@@ -18,25 +20,19 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-/**
- * Richiesta in entrata arricchita con il profilo del mittente.
- */
+// Data class IncomingRequestUi: aggregato immutabile di dati.
 data class IncomingRequestUi(
     val request: FriendRequest,
     val sender: User
 )
 
-/**
- * Richiesta in uscita arricchita con il profilo del destinatario.
- */
+// Data class OutgoingRequestUi: aggregato immutabile di dati.
 data class OutgoingRequestUi(
     val request: FriendRequest,
     val receiver: User
 )
 
-/**
- * Stato globale della schermata Community.
- */
+// Data class CommunityUiState: aggregato immutabile di dati.
 data class CommunityUiState(
     val currentUser: User? = null,
     val friends: List<User> = emptyList(),
@@ -52,16 +48,12 @@ data class CommunityUiState(
     val successMessage: String? = null
 
 ) {
-    /**
-     * Indica se l'utente corrente è un personal trainer.
-     */
+
     val isCurrentUserPt: Boolean
         get() = currentUser?.isPersonalTrainer == true
 }
 
-/**
- * ViewModel della schermata Community con supporto richieste PT.
- */
+// Classe CommunityViewModel: unità principale definita in questo file.
 @OptIn(FlowPreview::class)
 class CommunityViewModel(
     private val friendshipRepository: FriendshipRepository = FirebaseFriendshipSource(),
@@ -82,12 +74,7 @@ class CommunityViewModel(
         loadInitialUsers()
     }
 
-    /**
-     * Carica il profilo dell'utente autenticato.
-     */
-    /**
-     * Carica il profilo dell'utente autenticato.
-     */
+    // Carica i dati necessari per la schermata o il caso d'uso.
     private fun loadCurrentUser() {
         viewModelScope.launch {
             val result = userRepository.fetchCurrentUser()
@@ -116,9 +103,7 @@ class CommunityViewModel(
         }
     }
 
-    /**
-     * Avvia i listener realtime di amicizie, richieste, clienti PT e blocchi.
-     */
+    // Espone un flusso reattivo che emette gli aggiornamenti dalla sorgente dati.
     private fun observeAll() {
         viewModelScope.launch {
             friendshipRepository.observeFriendships().collect {
@@ -154,9 +139,7 @@ class CommunityViewModel(
         }
     }
 
-    /**
-     * Carica tutti gli utenti iniziali, li salva in cache e li mostra nella ricerca.
-     */
+    // Carica i dati necessari per la schermata o il caso d'uso.
     private fun loadInitialUsers() {
         viewModelScope.launch {
             _uiState.update { it.copy(isSearching = true) }
@@ -184,9 +167,7 @@ class CommunityViewModel(
         }
     }
 
-    /**
-     * Ricarica da remoto tutti gli utenti aggiornando la cache locale.
-     */
+    // Funzione di supporto interna alla classe.
     private suspend fun reloadUsersFromRemote(): List<User>? {
         return userRepository.getAllUsersForCommunity().fold(
             onSuccess = { users ->
@@ -203,9 +184,7 @@ class CommunityViewModel(
         )
     }
 
-    /**
-     * Filtra in memoria la cache locale su username, nome e cognome, escludendo l'utente corrente.
-     */
+    // Funzione di supporto interna alla classe.
     private fun filterCachedUsers(query: String): List<User> {
         val normalized = query.trim().lowercase()
         val currentUid = _uiState.value.currentUser?.uid
@@ -221,9 +200,7 @@ class CommunityViewModel(
         }
     }
 
-    /**
-     * Carica le statistiche di un set di utenti senza bloccare la lista principale.
-     */
+    // Carica i dati necessari per la schermata o il caso d'uso.
     private fun loadStatsFor(users: List<User>) {
         viewModelScope.launch {
             val map = _uiState.value.friendStats.toMutableMap()
@@ -236,6 +213,7 @@ class CommunityViewModel(
         }
     }
 
+    // Forza il ricaricamento dei dati dalla sorgente.
     private fun refreshFriendsUsers() {
         viewModelScope.launch {
             friendshipRepository.fetchFriendsAsUsers().fold(
@@ -248,6 +226,7 @@ class CommunityViewModel(
         }
     }
 
+    // Forza il ricaricamento dei dati dalla sorgente.
     private fun refreshPtClients() {
         viewModelScope.launch {
             friendshipRepository.fetchPtClientsAsUsers().fold(
@@ -260,9 +239,7 @@ class CommunityViewModel(
         }
     }
 
-    /**
-     * Osserva la query di ricerca con debounce e fallback a refresh remoto.
-     */
+    // Espone un flusso reattivo che emette gli aggiornamenti dalla sorgente dati.
     private fun observeSearchQuery() {
         viewModelScope.launch {
             _searchQuery
@@ -316,17 +293,13 @@ class CommunityViewModel(
         }
     }
 
-    /**
-     * Aggiorna il testo della query di ricerca.
-     */
+    // Handler UI: aggiorna nello stato il campo modificato dall'utente.
     fun onSearchQueryChange(query: String) {
         _searchQuery.value = query
         _uiState.update { it.copy(searchQuery = query) }
     }
 
-    /**
-     * Invia una richiesta amicizia standard.
-     */
+    // Invia la richiesta o il messaggio indicati.
     fun sendFriendshipRequest(receiverUid: String) = runOnVm {
         friendshipRepository.sendFriendRequest(
             receiverId = receiverUid,
@@ -334,9 +307,7 @@ class CommunityViewModel(
         ).reportAs("Richiesta amicizia inviata")
     }
 
-    /**
-     * Invia una richiesta per essere seguito da un PT.
-     */
+    // Invia la richiesta o il messaggio indicati.
     fun sendPtCoachingRequest(receiverUid: String) = runOnVm {
         friendshipRepository.sendFriendRequest(
             receiverId = receiverUid,
@@ -344,53 +315,39 @@ class CommunityViewModel(
         ).reportAs("Richiesta coaching inviata")
     }
 
-    /**
-     * Accetta una richiesta ricevuta.
-     */
+    // Accetta la richiesta ricevuta e aggiorna il relativo stato.
     fun acceptRequest(requestId: String) = runOnVm {
         friendshipRepository.acceptFriendRequest(requestId).reportAs("Richiesta accettata")
     }
 
-    /**
-     * Rifiuta una richiesta ricevuta.
-     */
+    // Rifiuta la richiesta ricevuta.
     fun rejectRequest(requestId: String) = runOnVm {
         friendshipRepository.rejectFriendRequest(requestId).reportAs("Richiesta rifiutata")
     }
 
-    /**
-     * Annulla una richiesta inviata.
-     */
+    // Annulla l'operazione in corso o la richiesta pendente.
     fun cancelRequest(requestId: String) = runOnVm {
         friendshipRepository.cancelFriendRequest(requestId).reportAs("Richiesta annullata")
     }
 
-    /**
-     * Rimuove un amico.
-     */
+    // Elimina la relazione o l'elemento indicato.
     fun removeFriend(friendUid: String) = runOnVm {
         friendshipRepository.removeFriend(friendUid).reportAs("Amicizia rimossa")
     }
 
-    /**
-     * Rimuove un cliente del PT corrente.
-     */
+    // Elimina la relazione o l'elemento indicato.
     fun removePtClient(clientUid: String) = runOnVm {
         friendshipRepository.removePtClient(clientUid).reportAs("Cliente rimosso")
     }
 
-    /**
-     * Pulisce i messaggi transienti mostrati in snackbar.
-     */
+    // Ripulisce lo stato o la collezione indicati.
     fun clearMessages() {
         _uiState.update {
             it.copy(errorMessage = null, successMessage = null)
         }
     }
 
-    /**
-     * Esegue un'azione nel ViewModel gestendo lo stato loading globale.
-     */
+    // Funzione di supporto interna alla classe.
     private inline fun runOnVm(crossinline block: suspend () -> Unit) {
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true) }
@@ -399,9 +356,7 @@ class CommunityViewModel(
         }
     }
 
-    /**
-     * Converte un Result in messaggio di successo o errore per la UI.
-     */
+    // Funzione di supporto interna alla classe.
     private fun Result<Unit>.reportAs(success: String) {
         fold(
             onSuccess = {

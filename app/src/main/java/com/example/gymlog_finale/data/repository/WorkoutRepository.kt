@@ -1,5 +1,7 @@
 package com.example.gymlog_finale.data.repository
 
+// Repository delle schede di allenamento e dei relativi log; gestisce anche l'assegnazione PT.
+
 import android.util.Log
 import com.example.gymlog_finale.data.model.Workout
 import com.example.gymlog_finale.data.model.Exercise
@@ -13,10 +15,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.tasks.await
 
-/**
- * Repository dedicato alla gestione delle schede di allenamento e dei log allenamento.
- * Le schede possono essere proprie (userId == utente) o assegnate da un PT (assignedTo == utente).
- */
+// Classe WorkoutRepository: unità principale definita in questo file.
 class WorkoutRepository {
     private val firestore = FirebaseFirestore.getInstance()
     private val auth = FirebaseAuth.getInstance()
@@ -26,6 +25,7 @@ class WorkoutRepository {
     private val workoutLogsCollection = firestore.collection(Constants.WORKOUT_LOGS_COLLECTION)
     private val usersCollection = firestore.collection(Constants.USERS_COLLECTION)
 
+    // Persiste l'entità sulla sorgente dati (creazione o aggiornamento).
     suspend fun saveWorkout(workout: Workout): Result<Unit> {
         return try {
             val uid = auth.currentUser?.uid ?: return Result.failure(Exception("Utente non autenticato"))
@@ -49,11 +49,7 @@ class WorkoutRepository {
         }
     }
 
-    /**
-     * Il PT crea una scheda assegnata al cliente.
-     * Il documento resta di proprietà del PT (userId == auth.uid) e referenzia il cliente via assignedTo
-     * così le rules workouts consentono la create e la read sia al PT sia al cliente assegnato.
-     */
+    // Invia la richiesta o il messaggio indicati.
     suspend fun sendWorkoutToFriend(workout: Workout, friendId: String): Result<Unit> {
         return try {
             val currentUid = auth.currentUser?.uid ?: return Result.failure(Exception("Non loggato"))
@@ -89,11 +85,7 @@ class WorkoutRepository {
         }
     }
 
-    /**
-     * Crea una nuova scheda dal PT assegnandola a un cliente sotto coaching.
-     * userId resta del PT (consente create), assignedTo abilita la read al cliente.
-     * Differisce da sendWorkoutToFriend perché parte dai dati raw del dialog (nome + esercizi + split).
-     */
+    // Persiste l'entità sulla sorgente dati (creazione o aggiornamento).
     suspend fun saveWorkoutForClient(
         clientUid: String,
         name: String,
@@ -103,7 +95,6 @@ class WorkoutRepository {
         return try {
             val ptUid = auth.currentUser?.uid ?: return Result.failure(Exception("Non loggato"))
 
-            // Nome leggibile per la targhetta "Creato da PT: Nome"
             val ptDoc = usersCollection.document(ptUid).get().await()
             val ptName = ptDoc.getString("nome") ?: "Personal Trainer"
 
@@ -135,6 +126,7 @@ class WorkoutRepository {
         }
     }
 
+    // Rimuove definitivamente l'entità indicata dalla sorgente dati.
     suspend fun deleteWorkout(workoutId: String): Result<Unit> {
         return try {
             workoutsCollection.document(workoutId).delete().await()
@@ -144,13 +136,7 @@ class WorkoutRepository {
         }
     }
 
-
-
-    /**
-     * Emette in realtime l'unione delle schede di proprietà dell'utente
-     * con quelle che gli sono state assegnate da un PT.
-     * I due snapshot sono gestiti separatamente e uniti deduplicando per id.
-     */
+    // Recupera l'entità o il valore richiesto dalla sorgente dati.
     fun getWorkoutsRealtime(): Flow<List<Workout>> = callbackFlow {
         val uid = auth.currentUser?.uid ?: run {
             trySend(emptyList())
@@ -193,6 +179,7 @@ class WorkoutRepository {
         }
     }
 
+    // Persiste l'entità sulla sorgente dati (creazione o aggiornamento).
     suspend fun saveWorkoutLog(log: WorkoutLog): Result<Unit> {
         return try {
             val uid = auth.currentUser?.uid ?: return Result.failure(Exception("Utente non autenticato"))
@@ -206,6 +193,7 @@ class WorkoutRepository {
         }
     }
 
+    // Recupera l'entità o il valore richiesto dalla sorgente dati.
     fun getWorkoutLogsRealtime(): Flow<List<WorkoutLog>> = callbackFlow {
         val uid = auth.currentUser?.uid ?: run {
             trySend(emptyList())
@@ -225,6 +213,7 @@ class WorkoutRepository {
         awaitClose { listener.remove() }
     }
 
+    // Persiste l'entità sulla sorgente dati (creazione o aggiornamento).
     suspend fun saveSplitPlan(plan: SplitPlan): Result<Unit> {
         return try {
             val uid = auth.currentUser?.uid ?: return Result.failure(Exception("Utente non autenticato"))
@@ -246,6 +235,7 @@ class WorkoutRepository {
         }
     }
 
+    // Recupera l'entità o il valore richiesto dalla sorgente dati.
     suspend fun getSplitPlan(): Result<SplitPlan> {
         return try {
             val uid = auth.currentUser?.uid ?: return Result.failure(Exception("Utente non autenticato"))

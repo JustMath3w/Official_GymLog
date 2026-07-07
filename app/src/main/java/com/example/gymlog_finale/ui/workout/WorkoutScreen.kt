@@ -1,5 +1,7 @@
 package com.example.gymlog_finale.ui.workout
 
+// Schermata Allenamento con selezione del giorno e gestione delle schede.
+
 import com.example.gymlog_finale.data.model.Workout
 import com.example.gymlog_finale.data.model.WorkoutLog
 import com.example.gymlog_finale.data.model.Exercise
@@ -57,6 +59,7 @@ val SPLIT_TYPES = listOf(
     "Rest"
 )
 
+// Composable che disegna una porzione della UI e ne gestisce lo stato locale.
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun WorkoutScreen(
@@ -95,7 +98,7 @@ fun WorkoutScreen(
         }
     }
 
-    // Helper per verificare se un log è avvenuto nel giorno della settimana selezionato
+    // Predicato che verifica una condizione booleana sullo stato.
     fun isLogOnDayOfWeek(logTimestamp: Long, dayIndex: Int): Boolean {
         val logCal = Calendar.getInstance().apply { timeInMillis = logTimestamp }
         val targetCal = Calendar.getInstance().apply {
@@ -128,7 +131,7 @@ fun WorkoutScreen(
     }
 
     if (activeWorkout != null && !isWorkoutMinimized) {
-        // VISTA A SCHERMO INTERO: Allenamento in corso
+
         ActiveWorkoutScreen(
             workout = activeWorkout!!,
             onMinimizeClick = { viewModel.setWorkoutMinimized(true) },
@@ -169,7 +172,7 @@ fun WorkoutScreen(
             )
         }
     } else {
-        // VISTA LOBBY / HOME ALLENAMENTI
+
         Scaffold(
             topBar = {
                 TopAppBar(
@@ -226,7 +229,6 @@ fun WorkoutScreen(
                         }
                     }
 
-                    // Barra dei giorni (WeekDaysRow)
                     item {
                         WeekDaysRow(
                             currentDayIndex = currentDayIndex,
@@ -238,9 +240,8 @@ fun WorkoutScreen(
                         )
                     }
 
-                    // 1. SEZIONE LOBBY PRINCIPALE (Allenamento del Giorno / Storico)
                     if (currentDayIndex < todayIndex) {
-                        // GIORNI PASSATI: Storico degli allenamenti svolti
+
                         item {
                             Text(
                                 text = "Storico Allenamenti Svolti",
@@ -348,8 +349,6 @@ fun WorkoutScreen(
                             }
                         }
 
-                        // Nessun allenamento attivo (o giorno futuro): mostra suggeriti basati sullo split
-
                         if (targetSplit.equals("Rest", ignoreCase = true)) {
                             item {
                                 Card(
@@ -411,7 +410,7 @@ fun WorkoutScreen(
                                             .background(Color(0xFFF6F5F8))
                                             .padding(24.dp)
                                     ) {
-                                        // Badge Traslucido superiore & indicatore di scelta
+
                                         Row(
                                             modifier = Modifier.fillMaxWidth(),
                                             horizontalArrangement = Arrangement.SpaceBetween,
@@ -478,7 +477,7 @@ fun WorkoutScreen(
                                             fontWeight = FontWeight.Black,
                                             color = Color.Black
                                         )
-                                        
+
                                         Row(
                                             horizontalArrangement = Arrangement.spacedBy(8.dp),
                                             modifier = Modifier.padding(vertical = 8.dp)
@@ -543,7 +542,7 @@ fun WorkoutScreen(
                                                 )
                                             }
                                         }
-                                        
+
                                         if (isToday) {
                                             Spacer(modifier = Modifier.height(20.dp))
                                             Button(
@@ -598,7 +597,6 @@ fun WorkoutScreen(
                             }
                         }
 
-                        // SOLO SE È OGGI: Mostra il selettore per un'altra scheda
                         if (isToday) {
                             item {
                                 Text(
@@ -659,7 +657,6 @@ fun WorkoutScreen(
                         }
                     }
 
-                    // 2. SEZIONE MODIFICA SCHEDE (INTEGRATA NELLA LOBBY IN FONDO)
                     item {
                         HorizontalDivider(modifier = Modifier.padding(vertical = 12.dp))
                         Row(
@@ -920,6 +917,7 @@ fun WorkoutScreen(
     }
 }
 
+// Composable che disegna una porzione della UI e ne gestisce lo stato locale.
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ActiveWorkoutScreen(
@@ -1005,6 +1003,7 @@ fun ActiveWorkoutScreen(
     }
 }
 
+// Composable che disegna una porzione della UI e ne gestisce lo stato locale.
 @Composable
 fun ActiveExerciseCard(
     exercise: Exercise,
@@ -1020,7 +1019,7 @@ fun ActiveExerciseCard(
         elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
-            // Intestazione cliccabile per espandere/collassare la card
+
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -1068,7 +1067,6 @@ fun ActiveExerciseCard(
                 }
             }
 
-            // Dati modificabili (mostrati solo se la tendina è espansa)
             if (isExpanded) {
                 Spacer(modifier = Modifier.height(16.dp))
                 HorizontalDivider(thickness = 0.5.dp, color = Color.DarkGray.copy(alpha = 0.1f))
@@ -1169,6 +1167,7 @@ fun ActiveExerciseCard(
     }
 }
 
+// Composable che disegna una porzione della UI e ne gestisce lo stato locale.
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SplitSettingsDialog(
@@ -1179,12 +1178,13 @@ fun SplitSettingsDialog(
     val tempSplit = remember { mutableStateMapOf<Int, String>().apply { putAll(currentPlan.split) } }
     var tempStartDate by remember { mutableStateOf(currentPlan.startDate) }
     var tempEndDate by remember { mutableStateOf(currentPlan.endDate) }
-    
+
     var showStartDatePicker by remember { mutableStateOf(false) }
     var showEndDatePicker by remember { mutableStateOf(false) }
 
     val daysLabels = listOf("Lunedì", "Martedì", "Mercoledì", "Giovedì", "Venerdì", "Sabato", "Domenica")
 
+    // Espone al chiamante la funzionalità indicata coordinando i livelli sottostanti.
     fun formatMillisToDate(millis: Long): String {
         if (millis == 0L) return "Seleziona data"
         val cal = Calendar.getInstance().apply { timeInMillis = millis }
@@ -1216,7 +1216,6 @@ fun SplitSettingsDialog(
                 )
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // Sezione selezione date
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(16.dp)
@@ -1325,7 +1324,7 @@ fun SplitSettingsDialog(
                     horizontalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
                     TextButton(
-                        onClick = onDismiss, 
+                        onClick = onDismiss,
                         modifier = Modifier.weight(1f),
                         colors = ButtonDefaults.textButtonColors(contentColor = Color.Black)
                     ) {
@@ -1344,7 +1343,6 @@ fun SplitSettingsDialog(
         }
     }
 
-    // Start Date Picker Dialog
     if (showStartDatePicker) {
         val datePickerState = rememberDatePickerState(
             initialSelectedDateMillis = if (tempStartDate != 0L) tempStartDate else null
@@ -1398,7 +1396,6 @@ fun SplitSettingsDialog(
         }
     }
 
-    // End Date Picker Dialog
     if (showEndDatePicker) {
         val datePickerState = rememberDatePickerState(
             initialSelectedDateMillis = if (tempEndDate != 0L) tempEndDate else null
@@ -1453,6 +1450,7 @@ fun SplitSettingsDialog(
     }
 }
 
+// Composable che disegna una porzione della UI e ne gestisce lo stato locale.
 @Composable
 fun WeekDaysRow(
     currentDayIndex: Int,
@@ -1518,7 +1516,7 @@ fun WeekDaysRow(
                         fontWeight = FontWeight.SemiBold,
                         maxLines = 1
                     )
-                    
+
                     Spacer(modifier = Modifier.height(4.dp))
                     Box(
                         modifier = Modifier
@@ -1538,6 +1536,7 @@ fun WeekDaysRow(
     }
 }
 
+// Composable che disegna una porzione della UI e ne gestisce lo stato locale.
 @Composable
 fun WorkoutLogCard(log: WorkoutLog, onExerciseClick: (Exercise) -> Unit) {
     val formattedTime = remember(log.completedAt) {
@@ -1564,7 +1563,7 @@ fun WorkoutLogCard(log: WorkoutLog, onExerciseClick: (Exercise) -> Unit) {
                     .fillMaxHeight()
                     .background(Color(0xFF4CAF50))
             )
-            
+
             Column(modifier = Modifier.padding(16.dp)) {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -1587,8 +1586,8 @@ fun WorkoutLogCard(log: WorkoutLog, onExerciseClick: (Exercise) -> Unit) {
                             modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
                         ) {
                             Icon(
-                                imageVector = Icons.Default.Check, 
-                                contentDescription = null, 
+                                imageVector = Icons.Default.Check,
+                                contentDescription = null,
                                 tint = Color(0xFF2E7D32),
                                 modifier = Modifier.size(12.dp)
                             )
@@ -1602,9 +1601,9 @@ fun WorkoutLogCard(log: WorkoutLog, onExerciseClick: (Exercise) -> Unit) {
                         }
                     }
                 }
-                
+
                 Spacer(modifier = Modifier.height(12.dp))
-                
+
                 Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
                     log.exercises.forEach { ex ->
                         Surface(
@@ -1619,24 +1618,24 @@ fun WorkoutLogCard(log: WorkoutLog, onExerciseClick: (Exercise) -> Unit) {
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
                                 Icon(
-                                    imageVector = Icons.Default.CheckCircle, 
-                                    contentDescription = null, 
-                                    tint = Color(0xFF4CAF50), 
+                                    imageVector = Icons.Default.CheckCircle,
+                                    contentDescription = null,
+                                    tint = Color(0xFF4CAF50),
                                     modifier = Modifier.size(16.dp)
                                 )
                                 Spacer(modifier = Modifier.width(10.dp))
                                 Column(modifier = Modifier.weight(1f)) {
                                     Text(
-                                        text = ex.name, 
-                                        style = MaterialTheme.typography.bodyMedium, 
+                                        text = ex.name,
+                                        style = MaterialTheme.typography.bodyMedium,
                                         fontWeight = FontWeight.Bold,
                                         color = MaterialTheme.colorScheme.onSurface
                                     )
-                                    
+
                                     val setsCount = ex.sets.toIntOrNull() ?: 0
                                     val repsText = ex.reps.ifBlank { "0" }
                                     val weightText = ex.weight.ifBlank { "0" }
-                                    
+
                                     val detailsSummary = if (setsCount > 0) {
                                         "$setsCount set • $repsText rep @ $weightText kg"
                                     } else {
@@ -1664,6 +1663,7 @@ fun WorkoutLogCard(log: WorkoutLog, onExerciseClick: (Exercise) -> Unit) {
     }
 }
 
+// Composable che disegna una porzione della UI e ne gestisce lo stato locale.
 @Composable
 fun WorkoutCard(
     workout: Workout,
@@ -1733,7 +1733,7 @@ fun WorkoutCard(
                                 modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp)
                             )
                         }
-                        
+
                         Text(
                             text = "${workout.exercises.size} esercizi",
                             style = MaterialTheme.typography.bodySmall,
@@ -1744,7 +1744,7 @@ fun WorkoutCard(
 
                 val currentUid = com.google.firebase.auth.FirebaseAuth.getInstance().currentUser?.uid
                 val isReceivedFromPT = workout.isReceived && workout.senderIsPersonalTrainer && workout.senderId != currentUid
-                
+
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     if (!isReceivedFromPT) {
                         Box(
@@ -1780,12 +1780,12 @@ fun WorkoutCard(
                     }
                 }
             }
-            
+
             if (isExpanded) {
                 Spacer(modifier = Modifier.height(16.dp))
                 HorizontalDivider(thickness = 0.5.dp, color = MaterialTheme.colorScheme.outlineVariant)
                 Spacer(modifier = Modifier.height(8.dp))
-                
+
                 workout.exercises.forEach { exercise ->
                     Surface(
                         onClick = { onExerciseClick(exercise) },
@@ -1838,13 +1838,13 @@ fun WorkoutCard(
                     }
                 }
             }
-            
+
             if (workout.isReceived) {
                 Spacer(modifier = Modifier.height(12.dp))
-                
+
                 val currentUid = com.google.firebase.auth.FirebaseAuth.getInstance().currentUser?.uid
                 val isSender = currentUid != null && workout.senderId == currentUid
-                
+
                 val bgColor = if (isSender) Color(0xFFF97316).copy(alpha = 0.1f) else Color.LightGray.copy(alpha = 0.4f)
                 val tintColor = if (isSender) Color(0xFFF97316) else Color.Black
                 val textLabel = if (isSender) "Inviata a: ${workout.receiverName ?: "Cliente"}" else "Ricevuto da: ${workout.senderName ?: "Amico"}"
@@ -1859,8 +1859,8 @@ fun WorkoutCard(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Icon(
-                            imageVector = icon, 
-                            contentDescription = null, 
+                            imageVector = icon,
+                            contentDescription = null,
                             modifier = Modifier.size(12.dp),
                             tint = tintColor
                         )
@@ -1878,6 +1878,7 @@ fun WorkoutCard(
     }
 }
 
+// Composable che disegna una porzione della UI e ne gestisce lo stato locale.
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun WorkoutDialog(
@@ -1950,10 +1951,9 @@ fun WorkoutDialog(
                             unfocusedContainerColor = Color(0xFFF6F5F8)
                         )
                     )
-                    
+
                     Spacer(modifier = Modifier.height(20.dp))
 
-                    // SEZIONE SCELTA SPLIT SCHEDA
                     Text("Tipologia Split Scheda", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
                     Spacer(modifier = Modifier.height(8.dp))
                     var splitDropdownExpanded by remember { mutableStateOf(false) }
@@ -1986,7 +1986,7 @@ fun WorkoutDialog(
                     }
 
                     Spacer(modifier = Modifier.height(24.dp))
-                    
+
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween,
@@ -2004,9 +2004,9 @@ fun WorkoutDialog(
                             Text("Aggiungi")
                         }
                     }
-                    
+
                     Spacer(modifier = Modifier.height(16.dp))
-                    
+
                     Column(
                         verticalArrangement = Arrangement.spacedBy(16.dp),
                         modifier = Modifier.fillMaxWidth()
@@ -2024,7 +2024,7 @@ fun WorkoutDialog(
                             )
                         }
                     }
-                    
+
                     Spacer(modifier = Modifier.height(40.dp))
                 }
             }
@@ -2032,6 +2032,7 @@ fun WorkoutDialog(
     }
 }
 
+// Composable che disegna una porzione della UI e ne gestisce lo stato locale.
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ExerciseInput(
@@ -2053,7 +2054,7 @@ fun ExerciseInput(
                 Box(modifier = Modifier.weight(1f)) {
                     OutlinedTextField(
                         value = exercise.name,
-                        onValueChange = { 
+                        onValueChange = {
                             onValueChange(exercise.copy(name = it))
                             viewModel.onSearchQueryChange(it)
                             isExpanded = it.length >= 2
@@ -2110,12 +2111,12 @@ fun ExerciseInput(
                         }
                     }
                 }
-                
+
                 IconButton(onClick = onRemove) {
                     Icon(Icons.Default.Delete, contentDescription = "Rimuovi", tint = Color.Red.copy(alpha = 0.6f))
                 }
             }
-            
+
             Spacer(modifier = Modifier.height(16.dp))
 
             Row(
@@ -2159,6 +2160,7 @@ fun ExerciseInput(
     }
 }
 
+// Composable che disegna una porzione della UI e ne gestisce lo stato locale.
 @kotlin.OptIn(androidx.compose.foundation.layout.ExperimentalLayoutApi::class)
 @Composable
 fun ExerciseDetailsDialog(
@@ -2166,7 +2168,7 @@ fun ExerciseDetailsDialog(
     onDismiss: () -> Unit
 ) {
     val context = LocalContext.current
-    
+
     Dialog(
         onDismissRequest = onDismiss,
         properties = DialogProperties(usePlatformDefaultWidth = false)
@@ -2202,9 +2204,9 @@ fun ExerciseDetailsDialog(
                         fontWeight = FontWeight.Black,
                         color = Color.Black
                     )
-                    
+
                     Spacer(modifier = Modifier.height(8.dp))
-                    
+
                     androidx.compose.foundation.layout.FlowRow(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -2238,15 +2240,15 @@ fun ExerciseDetailsDialog(
                     }
 
                     Spacer(modifier = Modifier.height(24.dp))
-                    
+
                     Text(
                         text = "Istruzioni",
                         style = MaterialTheme.typography.titleLarge,
                         fontWeight = FontWeight.Bold
                     )
-                    
+
                     Spacer(modifier = Modifier.height(12.dp))
-                    
+
                     if (exercise.instructions.isNotEmpty()) {
                         exercise.instructions.forEachIndexed { index, step ->
                             Row(modifier = Modifier.padding(vertical = 8.dp)) {
@@ -2275,7 +2277,7 @@ fun ExerciseDetailsDialog(
                             color = Color.DarkGray
                         )
                     }
-                    
+
                     Spacer(modifier = Modifier.height(40.dp))
                 }
             }
@@ -2283,6 +2285,7 @@ fun ExerciseDetailsDialog(
     }
 }
 
+// Funzione di supporto interna alla classe.
 private fun parseCsvValues(rawString: String, targetSize: Int, defaultValue: String): List<String> {
     if (targetSize <= 0) return emptyList()
     val parts = if (rawString.isEmpty()) emptyList() else rawString.split(",")
@@ -2298,11 +2301,13 @@ private fun parseCsvValues(rawString: String, targetSize: Int, defaultValue: Str
     return list
 }
 
+// Espone al chiamante la funzionalità indicata coordinando i livelli sottostanti.
 fun formatExerciseDetails(exercise: Exercise): String {
     val s = exercise.sets.ifBlank { "0" }
     return "$s set"
 }
 
+// Composable che disegna una porzione della UI e ne gestisce lo stato locale.
 @Composable
 fun ActiveWorkoutReminderCard(
     workoutName: String,

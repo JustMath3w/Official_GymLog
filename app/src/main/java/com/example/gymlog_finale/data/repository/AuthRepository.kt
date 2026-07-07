@@ -1,22 +1,24 @@
 package com.example.gymlog_finale.data.repository
 
+// Repository che astrae FirebaseAuthSource verso i ViewModel di login e registrazione.
+
 interface AuthRepository {
 
-    /** Crea un nuovo account Firebase con email e password, restituisce l'uid. */
+    // Registra un nuovo utente sulla piattaforma e crea il relativo documento profilo.
     suspend fun register(email: String, password: String): Result<String>
 
-    /** Autentica un utente esistente con email e password. */
+    // Esegue il login dell'utente con le credenziali fornite.
     suspend fun login(email: String, password: String): Result<Unit>
 
-    /** Autentica tramite token Google ottenuto dal client Android. */
+    // Esegue l'autenticazione tramite Google ID token e restituisce l'UID Firebase.
     suspend fun signInWithGoogle(idToken: String): Result<String>
 
-    /** Restituisce l'uid dell'utente attualmente loggato, null se nessuno. */
+    // Restituisce l'UID dell'utente attualmente autenticato, se presente.
     fun getCurrentUserId(): String?
 
-    /** Controlla se esiste una sessione Firebase attiva. */
+    // Predicato: indica se esiste una sessione utente attiva.
     fun isUserLoggedIn(): Boolean
 
-    /** Invalida la sessione Firebase corrente. */
+    // Termina la sessione utente corrente e ripulisce lo stato locale.
     fun logout()
 }

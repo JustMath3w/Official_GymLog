@@ -1,5 +1,7 @@
 package com.example.gymlog_finale.ui.diet
 
+// Schermata di storico della dieta con selezione settimana/giorno.
+
 import com.example.gymlog_finale.data.model.DailyDietStats
 import com.example.gymlog_finale.data.model.FoodItem
 
@@ -40,6 +42,7 @@ import androidx.compose.material.icons.outlined.Restaurant
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.sp
 
+// Composable che disegna una porzione della UI e ne gestisce lo stato locale.
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DietHistoryScreen(
@@ -80,7 +83,7 @@ fun DietHistoryScreen(
                 .fillMaxSize()
                 .padding(paddingValues)
         ) {
-            // Calendar View
+
             MonthCalendar(
                 selectedDate = selectedDate,
                 onDateSelected = { viewModel.selectDate(it) }
@@ -110,12 +113,10 @@ fun DietHistoryScreen(
                             )
                         }
 
-                        // Riepilogo Calorie Piccolo
                         item {
                             SmallCaloriesCard(consumed = stats.consumedCalories, total = stats.totalCalories)
                         }
 
-                        // Riepilogo Macro
                         item {
                             SmallMacrosSection(
                                 carbsConsumed = stats.consumedCarbs.toInt(), carbsTotal = stats.totalCarbs.toInt(),
@@ -124,9 +125,8 @@ fun DietHistoryScreen(
                             )
                         }
 
-                        // Lista dei pasti espandibile
                         val groupedFoods = stats.foods.groupBy { it.category }
-                        
+
                         MEAL_CATEGORIES.forEach { category ->
                             item {
                                 HistoryMealCategoryCard(
@@ -158,6 +158,7 @@ fun DietHistoryScreen(
     }
 }
 
+// Composable che disegna una porzione della UI e ne gestisce lo stato locale.
 @Composable
 fun HistoryMealCategoryCard(
     categoryName: String,
@@ -181,7 +182,7 @@ fun HistoryMealCategoryCard(
                     .height(IntrinsicSize.Min),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                // Barra laterale
+
                 Box(
                     modifier = Modifier
                         .width(4.dp)
@@ -190,7 +191,7 @@ fun HistoryMealCategoryCard(
                         .clip(RoundedCornerShape(2.dp))
                         .background(details.color)
                 )
-                
+
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -211,9 +212,9 @@ fun HistoryMealCategoryCard(
                             modifier = Modifier.size(24.dp)
                         )
                     }
-                    
+
                     Spacer(modifier = Modifier.width(16.dp))
-                    
+
                     Column(modifier = Modifier.weight(1f)) {
                         Text(
                             text = categoryName,
@@ -227,16 +228,16 @@ fun HistoryMealCategoryCard(
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
-                    
+
                     Text(
                         text = "$totalCalories kcal",
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.onSurface
                     )
-                    
+
                     Spacer(modifier = Modifier.width(16.dp))
-                    
+
                     Icon(
                         imageVector = if (expanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
                         contentDescription = if (expanded) "Comprimi" else "Espandi",
@@ -244,7 +245,7 @@ fun HistoryMealCategoryCard(
                     )
                 }
             }
-            
+
             AnimatedVisibility(visible = expanded) {
                 Column(
                     modifier = Modifier
@@ -291,23 +292,24 @@ fun HistoryMealCategoryCard(
     }
 }
 
+// Composable che disegna una porzione della UI e ne gestisce lo stato locale.
 @Composable
 fun MonthCalendar(
     selectedDate: Calendar,
     onDateSelected: (Calendar) -> Unit
 ) {
     var currentMonthCalendar by remember { mutableStateOf(selectedDate.clone() as Calendar) }
-    
+
     val todayCal = remember { Calendar.getInstance() }
     val todayYear = todayCal.get(Calendar.YEAR)
     val todayMonth = todayCal.get(Calendar.MONTH)
     val todayDay = todayCal.get(Calendar.DAY_OF_MONTH)
-    
+
     val sdfMonthYear = SimpleDateFormat("MMMM yyyy", Locale.ITALIAN)
     val daysOfWeek = listOf("Lun", "Mar", "Mer", "Gio", "Ven", "Sab", "Dom")
 
     Column(modifier = Modifier.fillMaxWidth().padding(16.dp)) {
-        // Mese e Anno + Controlli
+
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,
@@ -338,7 +340,6 @@ fun MonthCalendar(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Giorni della settimana
         Row(modifier = Modifier.fillMaxWidth()) {
             daysOfWeek.forEach { day ->
                 Text(
@@ -354,22 +355,20 @@ fun MonthCalendar(
 
         Spacer(modifier = Modifier.height(8.dp))
 
-        // Griglia dei giorni
         val daysInMonth = currentMonthCalendar.getActualMaximum(Calendar.DAY_OF_MONTH)
         val firstDayOfMonth = currentMonthCalendar.clone() as Calendar
         firstDayOfMonth.set(Calendar.DAY_OF_MONTH, 1)
-        
-        // Convertiamo il giorno della settimana (Domenica=1, Lunedì=2) a indice (Lunedì=0, Domenica=6)
+
         var firstDayIndex = firstDayOfMonth.get(Calendar.DAY_OF_WEEK) - 2
         if (firstDayIndex < 0) firstDayIndex = 6
 
         var currentDay = 1
-        
+
         for (row in 0 until 6) {
             Row(modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp)) {
                 for (col in 0 until 7) {
                     val isWithinMonth = (row == 0 && col >= firstDayIndex) || (row > 0 && currentDay <= daysInMonth)
-                    
+
                     if (isWithinMonth && currentDay <= daysInMonth) {
                         val currentYear = currentMonthCalendar.get(Calendar.YEAR)
                         val currentMonth = currentMonthCalendar.get(Calendar.MONTH)
@@ -379,12 +378,12 @@ fun MonthCalendar(
                                          currentDay == selectedDate.get(Calendar.DAY_OF_MONTH)
 
                         val isToday = currentYear == todayYear && currentMonth == todayMonth && currentDay == todayDay
-                        val isPast = currentYear < todayYear || 
-                                     (currentYear == todayYear && currentMonth < todayMonth) || 
+                        val isPast = currentYear < todayYear ||
+                                     (currentYear == todayYear && currentMonth < todayMonth) ||
                                      (currentYear == todayYear && currentMonth == todayMonth && currentDay < todayDay)
 
                         val dayToSelect = currentDay
-                        
+
                         val bgColor = if (isSelected) {
                             Color.Black
                         } else if (isToday) {
@@ -404,7 +403,7 @@ fun MonthCalendar(
                         } else {
                             MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f)
                         }
-                        
+
                         Box(
                             modifier = Modifier
                                 .weight(1f)
@@ -442,6 +441,7 @@ fun MonthCalendar(
     }
 }
 
+// Composable che disegna una porzione della UI e ne gestisce lo stato locale.
 @Composable
 fun SmallCaloriesCard(consumed: Int, total: Int) {
     val progress = if (total > 0) (consumed.toFloat() / total.toFloat()).coerceIn(0f, 1f) else 0f
@@ -497,6 +497,7 @@ fun SmallCaloriesCard(consumed: Int, total: Int) {
     }
 }
 
+// Composable che disegna una porzione della UI e ne gestisce lo stato locale.
 @Composable
 fun SmallMacrosSection(
     carbsConsumed: Int, carbsTotal: Int,
@@ -524,6 +525,7 @@ fun SmallMacrosSection(
     }
 }
 
+// Composable che disegna una porzione della UI e ne gestisce lo stato locale.
 @Composable
 fun SmallMacroItem(modifier: Modifier = Modifier, name: String, consumed: Int, total: Int, color: Color) {
     val progress = if (total > 0) (consumed.toFloat() / total.toFloat()).coerceIn(0f, 1f) else 0f
@@ -532,8 +534,8 @@ fun SmallMacroItem(modifier: Modifier = Modifier, name: String, consumed: Int, t
         horizontalAlignment = Alignment.Start
     ) {
         Text(
-            text = name, 
-            style = MaterialTheme.typography.labelMedium, 
+            text = name,
+            style = MaterialTheme.typography.labelMedium,
             fontWeight = FontWeight.SemiBold,
             color = MaterialTheme.colorScheme.onSurface
         )
@@ -566,6 +568,7 @@ fun SmallMacroItem(modifier: Modifier = Modifier, name: String, consumed: Int, t
     }
 }
 
+// Composable che disegna una porzione della UI e ne gestisce lo stato locale.
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AdvancedEditGoalsDialog(
@@ -579,12 +582,12 @@ fun AdvancedEditGoalsDialog(
     var pro by remember { mutableStateOf(initialStats.totalProteins.toInt().toString()) }
     var fats by remember { mutableStateOf(initialStats.totalFats.toInt().toString()) }
 
-    var selectedMode by remember { mutableStateOf(0) } // 0=Oggi, 1=Settimana, 2=Mese, 3=Personalizzato
-    
+    var selectedMode by remember { mutableStateOf(0) }
+
     val context = androidx.compose.ui.platform.LocalContext.current
     var startDate by remember { mutableStateOf(initialDate.clone() as Calendar) }
     var endDate by remember { mutableStateOf(initialDate.clone() as Calendar) }
-    
+
     var showStartDatePicker by remember { mutableStateOf(false) }
     var showEndDatePicker by remember { mutableStateOf(false) }
 
@@ -605,13 +608,13 @@ fun AdvancedEditGoalsDialog(
     AlertDialog(
         onDismissRequest = onDismiss,
         containerColor = Color.White,
-        title = { 
+        title = {
             Text(
-                "Modifica Obiettivi", 
+                "Modifica Obiettivi",
                 style = MaterialTheme.typography.titleLarge,
-                fontWeight = FontWeight.Bold, 
+                fontWeight = FontWeight.Bold,
                 color = Color.Black
-            ) 
+            )
         },
         text = {
             Column(modifier = Modifier.verticalScroll(rememberScrollState())) {
@@ -645,7 +648,7 @@ fun AdvancedEditGoalsDialog(
 
                 Spacer(modifier = Modifier.height(16.dp))
                 Text("Applica a:", fontWeight = FontWeight.SemiBold, color = Color.Black)
-                
+
                 val modes = listOf("Solo questo giorno", "Questa settimana", "Questo mese", "Personalizzato")
                 modes.forEachIndexed { index, title ->
                     Row(
@@ -656,7 +659,7 @@ fun AdvancedEditGoalsDialog(
                             .padding(vertical = 4.dp)
                     ) {
                         RadioButton(
-                            selected = selectedMode == index, 
+                            selected = selectedMode == index,
                             onClick = { selectedMode = index },
                             colors = RadioButtonDefaults.colors(selectedColor = Color.Black)
                         )
@@ -688,7 +691,7 @@ fun AdvancedEditGoalsDialog(
                     }
                 }
             }
-            
+
             if (showStartDatePicker) {
                 val datePickerState = rememberDatePickerState(initialSelectedDateMillis = startDate.timeInMillis)
                 DatePickerDialog(
@@ -799,29 +802,29 @@ fun AdvancedEditGoalsDialog(
                 val cb = carbs.toDoubleOrNull() ?: 250.0
                 val p = pro.toDoubleOrNull() ?: 150.0
                 val f = fats.toDoubleOrNull() ?: 70.0
-                
+
                 val start = Calendar.getInstance()
                 val end = Calendar.getInstance()
 
                 when(selectedMode) {
-                    0 -> { // Oggi
+                    0 -> {
                         start.time = initialDate.time
                         end.time = initialDate.time
                     }
-                    1 -> { // Settimana
+                    1 -> {
                         start.time = initialDate.time
                         start.firstDayOfWeek = Calendar.MONDAY
                         start.set(Calendar.DAY_OF_WEEK, Calendar.MONDAY)
                         end.time = start.time
                         end.add(Calendar.DAY_OF_MONTH, 6)
                     }
-                    2 -> { // Mese
+                    2 -> {
                         start.time = initialDate.time
                         start.set(Calendar.DAY_OF_MONTH, 1)
                         end.time = start.time
                         end.set(Calendar.DAY_OF_MONTH, end.getActualMaximum(Calendar.DAY_OF_MONTH))
                     }
-                    3 -> { // Personalizzato
+                    3 -> {
                         start.time = startDate.time
                         end.time = endDate.time
                         if (end.before(start)) {
@@ -829,7 +832,7 @@ fun AdvancedEditGoalsDialog(
                         }
                     }
                 }
-                
+
                 onSave(start, end, c, cb, p, f)
             },
             colors = ButtonDefaults.buttonColors(containerColor = Color.Black, contentColor = Color.White)

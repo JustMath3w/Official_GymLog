@@ -1,5 +1,7 @@
 package com.example.gymlog_finale.util
 
+// Modulo Glide personalizzato per configurare il caricamento delle immagini.
+
 import android.content.Context
 import com.bumptech.glide.Glide
 import com.bumptech.glide.Registry
@@ -10,8 +12,10 @@ import com.bumptech.glide.module.AppGlideModule
 import okhttp3.OkHttpClient
 import java.io.InputStream
 
+// Classe GymLogGlideModule: unità principale definita in questo file.
 @GlideModule
 class GymLogGlideModule : AppGlideModule() {
+    // Registra un nuovo utente sulla piattaforma e crea il relativo documento profilo.
     override fun registerComponents(context: Context, glide: Glide, registry: Registry) {
         val client = OkHttpClient.Builder()
             .addInterceptor { chain ->

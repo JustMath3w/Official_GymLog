@@ -1,5 +1,7 @@
 package com.example.gymlog_finale.ui.community.components
 
+// Tab riservato ai Personal Trainer, con la lista dei propri clienti assistiti.
+
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -14,6 +16,7 @@ import androidx.compose.ui.unit.dp
 import com.example.gymlog_finale.data.model.FriendStats
 import com.example.gymlog_finale.data.model.User
 
+// Composable che disegna una porzione della UI e ne gestisce lo stato locale.
 @Composable
 fun PtClientsTab(
     clients: List<User>,

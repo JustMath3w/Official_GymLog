@@ -1,5 +1,7 @@
 package com.example.gymlog_finale.ui.auth.register
 
+// Primo step del wizard di registrazione (dati anagrafici).
+
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -26,10 +28,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.gymlog_finale.ui.auth.components.AuthTextField
 
-/**
- * Primo step di registrazione: raccoglie nome, cognome ed email.
- * La validazione avviene nel ViewModel prima di procedere allo step 2.
- */
+// Composable che disegna una porzione della UI e ne gestisce lo stato locale.
 @Composable
 fun RegisterStep1Screen(
     onNextStep: () -> Unit,

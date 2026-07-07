@@ -1,5 +1,7 @@
 package com.example.gymlog_finale.ui.home.components
 
+// Griglia Compose di scorciatoie verso le sezioni principali dell'applicazione.
+
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -18,6 +20,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
 
+// Data class ToolItem: aggregato immutabile di dati.
 private data class ToolItem(
     val label: String,
     val icon: ImageVector,
@@ -26,6 +29,7 @@ private data class ToolItem(
     val onClick: () -> Unit
 )
 
+// Composable che disegna una porzione della UI e ne gestisce lo stato locale.
 @Composable
 fun ToolsGrid(
     onAllenamento: () -> Unit,
@@ -52,6 +56,7 @@ fun ToolsGrid(
     }
 }
 
+// Composable che disegna una porzione della UI e ne gestisce lo stato locale.
 @Composable
 private fun ToolCard(tool: ToolItem, modifier: Modifier = Modifier) {
     Card(
@@ -74,15 +79,15 @@ private fun ToolCard(tool: ToolItem, modifier: Modifier = Modifier) {
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
-                    tool.icon, 
-                    contentDescription = null, 
+                    tool.icon,
+                    contentDescription = null,
                     tint = tool.iconColor,
                     modifier = Modifier.size(28.dp)
                 )
             }
             Spacer(Modifier.height(12.dp))
             Text(
-                tool.label, 
+                tool.label,
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = androidx.compose.ui.text.font.FontWeight.SemiBold,
                 color = Color.Black

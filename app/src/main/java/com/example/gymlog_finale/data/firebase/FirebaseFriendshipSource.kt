@@ -1,5 +1,7 @@
 package com.example.gymlog_finale.data.firebase
 
+// Sorgente Firestore per amicizie, richieste di amicizia e relazione Personal Trainer/cliente; espone flussi realtime tramite callbackFlow.
+
 import com.example.gymlog_finale.data.model.FriendRequest
 import com.example.gymlog_finale.data.model.FriendRequestStatus
 import com.example.gymlog_finale.data.model.FriendRequestType
@@ -18,48 +20,34 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.tasks.await
 
-/**
- * Gestisce tutte le operazioni relative alla Community (Amicizie, Personal Trainer).
- * Si collega direttamente alle collezioni Firestore.
- */
+// Classe FirebaseFriendshipSource: unità principale definita in questo file.
 class FirebaseFriendshipSource(
     private val auth: FirebaseAuth = FirebaseAuth.getInstance(),
     private val db: FirebaseFirestore = FirebaseFirestore.getInstance()
 ) : FriendshipRepository {
 
-    // Riferimenti diretti alle varie "cartelle" (collezioni) nel database
     private val friendshipsCol get() = db.collection(Constants.FRIENDS_COLLECTION)
     private val requestsCol get() = db.collection(Constants.FRIEND_REQUESTS_COLLECTION)
     private val usersCol get() = db.collection(Constants.USERS_COLLECTION)
 
-    // Ottiene l'ID dell'utente attualmente loggato
+    // Funzione di supporto interna alla classe.
     private fun currentUid(): String? = auth.currentUser?.uid
 
-    /**
-     * Percorso per trovare la lista dei clienti di un Personal Trainer specifico.
-     */
+    // Funzione di supporto interna alla classe.
     private fun ptClientsSubcollection(userId: String) =
         usersCol.document(userId).collection("clients")
 
-    /**
-     * Crea un ID univoco per un'amicizia unendo i due ID in ordine alfabetico.
-     */
+    // Funzione di supporto interna alla classe.
     private fun friendshipId(a: String, b: String): String =
         if (a < b) "${a}_${b}" else "${b}_${a}"
 
-    /**
-     * Crea un ID per la richiesta che va dal mittente al destinatario.
-     */
+    // Funzione di supporto interna alla classe.
     private fun requestId(sender: String, receiver: String): String = "${sender}_${receiver}"
 
-    /**
-     * Crea un ID univoco per la relazione tra il PT e il suo cliente.
-     */
+    // Funzione di supporto interna alla classe.
     private fun ptRelationshipId(userId: String, clientId: String): String = "${userId}_${clientId}"
 
-    /**
-     * Converte in modo sicuro la data di creazione in millisecondi (per ordinare liste).
-     */
+    // Funzione di supporto interna alla classe.
     private fun anyCreatedAtToMillis(value: Any?): Long {
         return when (value) {
             is Long -> value
@@ -69,10 +57,7 @@ class FirebaseFriendshipSource(
         }
     }
 
-    /**
-     * Ascolta in tempo reale se vengono aggiunti o rimossi amici.
-     * @return Un flusso continuo (Flow) di aggiornamenti.
-     */
+    // Espone un flusso reattivo che emette gli aggiornamenti dalla sorgente dati.
     override fun observeFriendships(): Flow<List<Friendship>> = callbackFlow {
         val uid = currentUid() ?: run {
             trySend(emptyList())
@@ -80,7 +65,6 @@ class FirebaseFriendshipSource(
             return@callbackFlow
         }
 
-        // Si iscrive ai cambiamenti del database dove l'utente compare nella lista "users"
         val registration = friendshipsCol
             .whereArrayContains("users", uid)
             .addSnapshotListener { snapshot, _ ->
@@ -88,32 +72,26 @@ class FirebaseFriendshipSource(
                     document.toObject(Friendship::class.java)?.copy(id = document.id)
                 } ?: emptyList()
 
-                trySend(items) // Invia la nuova lista alla UI
+                trySend(items)
             }
 
-        // Rimuove l'ascolto se l'utente chiude la pagina
         awaitClose { registration.remove() }
     }
 
-    /**
-     * Scarica i profili completi di tutti gli amici dell'utente.
-     */
+    // Richiede al servizio remoto i dati indicati e li restituisce al chiamante.
     override suspend fun fetchFriendsAsUsers(): Result<List<User>> {
         return try {
             val uid = currentUid() ?: return Result.failure(Exception("Non autenticato"))
 
-            // Prende tutti i documenti amicizia dell'utente
             val snapshot = friendshipsCol
                 .whereArrayContains("users", uid).get().await()
 
-            // Estrae solo gli ID degli amici (ignorando l'ID dell'utente stesso)
             val friendUids = snapshot.documents.mapNotNull { document ->
                 (document.get("users") as? List<*>)?.firstOrNull { it != uid } as? String
             }
 
             if (friendUids.isEmpty()) return Result.success(emptyList())
 
-            // Recupera e restituisce i dati completi degli amici visibili
             val users = fetchUsersByIds(friendUids)
             Result.success(users)
         } catch (e: Exception) {
@@ -121,9 +99,7 @@ class FirebaseFriendshipSource(
         }
     }
 
-    /**
-     * Rimuove un amico eliminando il documento dal database.
-     */
+    // Elimina la relazione o l'elemento indicato.
     override suspend fun removeFriend(friendUid: String): Result<Unit> {
         return try {
             val uid = currentUid() ?: return Result.failure(Exception("Non autenticato"))
@@ -134,9 +110,7 @@ class FirebaseFriendshipSource(
         }
     }
 
-    /**
-     * Ascolta in tempo reale le richieste di amicizia/PT ricevute.
-     */
+    // Espone un flusso reattivo che emette gli aggiornamenti dalla sorgente dati.
     override fun observeIncomingRequests(): Flow<List<FriendRequest>> = callbackFlow {
         val uid = currentUid() ?: run {
             trySend(emptyList())
@@ -145,14 +119,13 @@ class FirebaseFriendshipSource(
         }
 
         val registration = requestsCol
-            .whereEqualTo("receiverId", uid) // Cerca dove siamo noi i destinatari
+            .whereEqualTo("receiverId", uid)
             .addSnapshotListener { snapshot, error ->
                 if (error != null) {
                     trySend(emptyList())
                     return@addSnapshotListener
                 }
 
-                // Filtra solo le richieste ancora in attesa (PENDING) e le ordina per data
                 val items = snapshot?.documents
                     ?.mapNotNull { document ->
                         document.toObject(FriendRequest::class.java)?.copy(id = document.id)
@@ -167,9 +140,7 @@ class FirebaseFriendshipSource(
         awaitClose { registration.remove() }
     }
 
-    /**
-     * Ascolta in tempo reale le richieste inviate (per poterle annullare se si vuole).
-     */
+    // Espone un flusso reattivo che emette gli aggiornamenti dalla sorgente dati.
     override fun observeOutgoingRequests(): Flow<List<FriendRequest>> = callbackFlow {
         val uid = currentUid() ?: run {
             trySend(emptyList())
@@ -178,7 +149,7 @@ class FirebaseFriendshipSource(
         }
 
         val registration = requestsCol
-            .whereEqualTo("senderId", uid) // Cerca le richieste partite da noi
+            .whereEqualTo("senderId", uid)
             .addSnapshotListener { snapshot, error ->
                 if (error != null) {
                     trySend(emptyList())
@@ -199,18 +170,14 @@ class FirebaseFriendshipSource(
         awaitClose { registration.remove() }
     }
 
-    /**
-     * Controlla se l'utente specificato è un Personal Trainer leggendo il suo documento.
-     */
+    // Predicato che verifica una condizione booleana sullo stato.
     private fun isPersonalTrainerOf(doc: com.google.firebase.firestore.DocumentSnapshot): Boolean {
         return doc.getBoolean("personalTrainer")
             ?: doc.getBoolean("isPersonalTrainer")
             ?: false
     }
 
-    /**
-     * Crea e invia una nuova richiesta (Amicizia o PT Coaching).
-     */
+    // Invia la richiesta o il messaggio indicati.
     override suspend fun sendFriendRequest(
         receiverId: String,
         requestType: String
@@ -220,29 +187,25 @@ class FirebaseFriendshipSource(
 
             if (uid == receiverId) return Result.failure(Exception("Non puoi inviare una richiesta a te stesso"))
 
-            // Se siamo già amici, blocca
             val friendshipDoc = friendshipsCol.document(friendshipId(uid, receiverId)).get().await()
             if (friendshipDoc.exists() && requestType == FriendRequestType.FRIENDSHIP.name) {
                 return Result.failure(Exception("Siete già amici"))
             }
 
-            // Se ho già inviato una richiesta in attesa, blocca
             val existing = requestsCol.document(requestId(uid, receiverId)).get().await()
             if (existing.exists() && existing.getString("status") == FriendRequestStatus.PENDING.name) {
                 return Result.failure(Exception("Richiesta già inviata"))
             }
 
-            // Se lui mi ha già inviato una richiesta in attesa, blocca
             val opposite = requestsCol.document(requestId(receiverId, uid)).get().await()
             if (opposite.exists() && opposite.getString("status") == FriendRequestStatus.PENDING.name) {
                 return Result.failure(Exception("Esiste già una richiesta pendente tra voi"))
             }
 
-            // Controlli speciali se la richiesta è per avere un PT
             if (requestType == FriendRequestType.PT_COACHING.name) {
                 val receiverDoc = usersCol.document(receiverId).get().await()
                 if (!receiverDoc.exists()) return Result.failure(Exception("Utente non trovato"))
-                
+
                 if (!isPersonalTrainerOf(receiverDoc)) {
                     return Result.failure(Exception("Puoi inviare questa richiesta solo a un personal trainer"))
                 }
@@ -258,7 +221,6 @@ class FirebaseFriendshipSource(
                 }
             }
 
-            // Se supera tutti i controlli, crea l'oggetto richiesta e lo salva
             val request = FriendRequest(
                 id = requestId(uid, receiverId),
                 senderId = uid,
@@ -275,26 +237,22 @@ class FirebaseFriendshipSource(
         }
     }
 
-    /**
-     * Scarica e calcola quante volte e con che costanza si è allenato un utente (Stats).
-     */
+    // Richiede al servizio remoto i dati indicati e li restituisce al chiamante.
     override suspend fun fetchUserStats(targetUid: String): com.example.gymlog_finale.data.model.FriendStats {
         return try {
-            // Scarica tutti i log degli allenamenti conclusi da questo utente
+
             val workoutLogsSnap = db.collection(Constants.WORKOUT_LOGS_COLLECTION)
                 .whereEqualTo("userId", targetUid)
                 .get()
                 .await()
 
-            // Prende solo i timestamp dei giorni completati
             val completionDays: List<Long> = workoutLogsSnap.documents.mapNotNull {
                 it.getLong("completedAt")
             }
 
-            val workoutStreak = streakFromTimestamps(completionDays) // Giorni di fila
+            val workoutStreak = streakFromTimestamps(completionDays)
             val totalTrainingDays = completionDays.map { dayBucket(it) }.toSet().size
 
-            // Conta quale esercizio ha fatto più volte
             val exerciseCounts = mutableMapOf<String, Int>()
             workoutLogsSnap.documents.forEach { doc ->
                 val exercises = doc.get("exercises") as? List<*> ?: return@forEach
@@ -305,7 +263,6 @@ class FirebaseFriendshipSource(
             }
             val favoriteExercise = exerciseCounts.maxByOrNull { it.value }?.key
 
-            // Fa la stessa cosa per la dieta (per contare la costanza)
             val dietLogsSnap = db.collection("dietLogs")
                 .whereEqualTo("userId", targetUid)
                 .get()
@@ -316,7 +273,6 @@ class FirebaseFriendshipSource(
             }
             val dietStreak = streakFromTimestamps(dietDays)
 
-            // Controlla il nome del suo Personal Trainer, se ne ha uno
             val targetUserDoc = usersCol.document(targetUid).get().await()
             val ptUid = targetUserDoc.getString("hasPersonalTrainer")
             val ptName = if (!ptUid.isNullOrBlank()) {
@@ -324,7 +280,6 @@ class FirebaseFriendshipSource(
                 ptDoc.getString("username")
             } else null
 
-            // Restituisce le statistiche imballate pronte per la UI
             com.example.gymlog_finale.data.model.FriendStats(
                 workoutStreakDays = workoutStreak,
                 dietStreakDays = dietStreak,
@@ -333,18 +288,14 @@ class FirebaseFriendshipSource(
                 personalTrainerName = ptName
             )
         } catch (e: Exception) {
-            com.example.gymlog_finale.data.model.FriendStats() // In caso di errore restituisce zeri
+            com.example.gymlog_finale.data.model.FriendStats()
         }
     }
 
-    /**
-     * Arrotonda il tempo in millisecondi a "giorno esatto" per calcolare le serie.
-     */
+    // Funzione di supporto interna alla classe.
     private fun dayBucket(tsMs: Long): Long = tsMs / (24L * 60L * 60L * 1000L)
 
-    /**
-     * Calcola la "streak" (i giorni di fuoco consecutivi) contando a ritroso da oggi.
-     */
+    // Funzione di supporto interna alla classe.
     private fun streakFromTimestamps(timestamps: List<Long>): Int {
         if (timestamps.isEmpty()) return 0
         val days = timestamps.map { dayBucket(it) }.toSortedSet()
@@ -358,9 +309,7 @@ class FirebaseFriendshipSource(
         return streak
     }
 
-    /**
-     * L'utente corrente accetta una richiesta in arrivo.
-     */
+    // Accetta la richiesta ricevuta e aggiorna il relativo stato.
     override suspend fun acceptFriendRequest(requestId: String): Result<Unit> {
         return try {
             val uid = currentUid() ?: return Result.failure(Exception("Non autenticato"))
@@ -373,10 +322,9 @@ class FirebaseFriendshipSource(
                 return Result.failure(Exception("Non sei il destinatario della richiesta"))
             }
 
-            // In base al tipo di richiesta fa operazioni diverse
             when (request.requestType) {
                 FriendRequestType.FRIENDSHIP.name -> {
-                    // Crea l'amicizia ufficiale
+
                     val pairId = friendshipId(request.senderId, request.receiverId)
                     val friendship = Friendship(
                         id = pairId,
@@ -384,10 +332,9 @@ class FirebaseFriendshipSource(
                         createdAt = System.currentTimeMillis()
                     )
 
-                    // Usa il "batch" per fare più scritture insieme in modo sicuro (tutte o nessuna)
                     val batch = db.batch()
-                    batch.set(friendshipsCol.document(pairId), friendship) // Salva l'amicizia
-                    batch.update(requestsCol.document(requestId), "status", FriendRequestStatus.ACCEPTED.name) // Segna accettata
+                    batch.set(friendshipsCol.document(pairId), friendship)
+                    batch.update(requestsCol.document(requestId), "status", FriendRequestStatus.ACCEPTED.name)
                     batch.commit().await()
                 }
 
@@ -403,7 +350,6 @@ class FirebaseFriendshipSource(
                         return Result.failure(Exception("Utente già seguito da un PT"))
                     }
 
-                    // Scrive in modo sicuro che l'utente ora ha questo PT, crea la relazione e segna la richiesta accettata
                     val batch = db.batch()
                     batch.update(usersCol.document(clientUid), "hasPersonalTrainer", trainerUid)
                     batch.set(
@@ -421,9 +367,7 @@ class FirebaseFriendshipSource(
         }
     }
 
-    /**
-     * Rifiuta una richiesta e le cambia lo stato in REJECTED.
-     */
+    // Rifiuta la richiesta ricevuta.
     override suspend fun rejectFriendRequest(requestId: String): Result<Unit> {
         return try {
             requestsCol.document(requestId).update("status", FriendRequestStatus.REJECTED.name).await()
@@ -433,9 +377,7 @@ class FirebaseFriendshipSource(
         }
     }
 
-    /**
-     * Annulla una richiesta inviata per sbaglio (CANCELLED).
-     */
+    // Annulla l'operazione in corso o la richiesta pendente.
     override suspend fun cancelFriendRequest(requestId: String): Result<Unit> {
         return try {
             requestsCol.document(requestId).update("status", FriendRequestStatus.CANCELLED.name).await()
@@ -445,9 +387,7 @@ class FirebaseFriendshipSource(
         }
     }
 
-    /**
-     * Ascolta in tempo reale se si aggiungono o tolgono clienti per il PT corrente.
-     */
+    // Espone un flusso reattivo che emette gli aggiornamenti dalla sorgente dati.
     override fun observePtClients(): Flow<List<PtRelationship>> = callbackFlow {
         val uid = currentUid() ?: run {
             trySend(emptyList())
@@ -473,9 +413,7 @@ class FirebaseFriendshipSource(
         awaitClose { registration.remove() }
     }
 
-    /**
-     * Scarica i profili utente completi di tutti i clienti attuali del PT.
-     */
+    // Richiede al servizio remoto i dati indicati e li restituisce al chiamante.
     override suspend fun fetchPtClientsAsUsers(): Result<List<User>> {
         return try {
             val uid = currentUid() ?: return Result.failure(Exception("Non autenticato"))
@@ -492,15 +430,12 @@ class FirebaseFriendshipSource(
         }
     }
 
-    /**
-     * Il PT rimuove un cliente (interrompendo il coaching).
-     */
+    // Elimina la relazione o l'elemento indicato.
     override suspend fun removePtClient(clientUid: String): Result<Unit> {
         return try {
             val uid = currentUid() ?: return Result.failure(Exception("Non autenticato"))
             val clientDoc = usersCol.document(clientUid).get().await()
 
-            // Elimina il cliente e resetta il suo "PT" nel profilo in contemporanea
             val batch = db.batch()
             batch.delete(ptClientsSubcollection(uid).document(clientUid))
             if (clientDoc.getString("hasPersonalTrainer") == uid) {
@@ -513,13 +448,11 @@ class FirebaseFriendshipSource(
         }
     }
 
-    /**
-     * Scarica profili utente suddividendoli a gruppi di 10 (limite Firebase per il whereIn).
-     */
+    // Richiede al servizio remoto i dati indicati e li restituisce al chiamante.
     private suspend fun fetchUsersByIds(uids: List<String>): List<User> {
         return uids
             .distinct()
-            .chunked(10) // Evita il crash dividendo in mini-gruppi da 10
+            .chunked(10)
             .flatMap { chunk ->
                 usersCol
                     .whereIn(FieldPath.documentId(), chunk)
@@ -530,9 +463,7 @@ class FirebaseFriendshipSource(
             }
     }
 
-    /**
-     * Converte i dati grezzi del database nell'oggetto User di Kotlin.
-     */
+    // Funzione di supporto interna alla classe.
     private fun documentToUser(document: com.google.firebase.firestore.DocumentSnapshot): User? {
         if (!document.exists()) return null
         return User(
